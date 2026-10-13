@@ -73,7 +73,7 @@
                             text-align: center;
                             color: #ffffff;
                         ">
-                            Welcome, {{ e($user->name) }}!
+                            Welcome, <strong>@{{ e($user->username) }}</strong>!
                         </h1>
 
                         <p style="
