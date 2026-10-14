@@ -17,10 +17,12 @@ export default function PostCard({ post }: PostCardProps) {
                     <p className="font-semibold text-gray-900 dark:text-white">
                         @{post.user.username}
                     </p>
+
                     <p className="text-sm text-gray-500 dark:text-gray-400">
                         {post.community.name}
                     </p>
                 </div>
+
                 <time
                     className="text-xs text-gray-500 dark:text-gray-400"
                     dateTime={post.created_at}
@@ -39,7 +41,10 @@ export default function PostCard({ post }: PostCardProps) {
                 </p>
             )}
 
-            {post.media.length > 0 && <PostMediaCarousel media={post.media} />}
+            {post.media.length > 0 && (
+                <PostMediaCarousel post={post} />
+            )}
+
             <PostActions post={post} />
         </article>
     );

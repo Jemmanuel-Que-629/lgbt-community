@@ -1,22 +1,30 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\FeedController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\PostInteractionController;
+use Illuminate\Support\Facades\Route;
 
 Route::inertia('/', 'welcome')->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::inertia('dashboard', 'dashboard')->name('dashboard');
+
     Route::get('/feed', [FeedController::class, 'index'])
-        ->name('feed'); 
+        ->name('feed');
+
     Route::post('/posts', [PostController::class, 'store'])
-    ->name('posts.store');
+        ->name('posts.store');
+
     Route::post(
-    '/posts/{post}/reaction',
-    [PostInteractionController::class, 'toggleReaction']
+        '/posts/{post}/reaction',
+        [PostInteractionController::class, 'toggleReaction']
     )->name('posts.reaction.toggle');
+
+    Route::get(
+        '/posts/{post}/comments',
+        [PostInteractionController::class, 'indexComments']
+    )->name('posts.comments.index');
 
     Route::post(
         '/posts/{post}/comments',
@@ -29,4 +37,4 @@ Route::middleware(['auth', 'verified'])->group(function () {
     )->name('posts.share');
 });
 
-require __DIR__.'/settings.php';
+require __DIR__ . '/settings.php';
