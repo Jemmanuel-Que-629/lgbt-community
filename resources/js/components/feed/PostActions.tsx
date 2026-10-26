@@ -1,9 +1,17 @@
+
 import { router } from '@inertiajs/react';
-import { useCallback, useEffect, useState } from 'react';
-import type { FormEvent } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import type { FormEvent, UIEvent } from 'react';
 
 import CommentThread from '@/components/feed/CommentThread';
 import type { CommentItem, Post } from '@/types/feed';
+
+type CommentsResponse = {
+    comments: CommentItem[];
+    current_page: number;
+    last_page: number;
+    total: number;
+};
 
 type PostActionsProps = {
     post: Post;
@@ -17,41 +25,86 @@ export default function PostActions({ post }: PostActionsProps) {
         post.comments ?? [],
     );
     const [commentsLoading, setCommentsLoading] = useState(false);
+    const [loadingMore, setLoadingMore] = useState(false);
+    const [commentsPage, setCommentsPage] = useState(1);
+    const [hasMoreComments, setHasMoreComments] = useState(true);
+    const [totalComments, setTotalComments] = useState(
+        post.comments_count ?? 0,
+    );
     const [feedback, setFeedback] = useState('');
+
+    const loadingMoreRef = useRef(false);
 
     const currentReaction = post.reactions?.[0] ?? null;
     const isLiked = currentReaction !== null;
 
-    const loadComments = useCallback(async () => {
-        setCommentsLoading(true);
+    const loadComments = useCallback(
+        async (page = 1, append = false) => {
+            if (append && loadingMoreRef.current) return;
 
-        try {
-            const response = await fetch(`/posts/${post.id}/comments`, {
-                method: 'GET',
-                headers: {
-                    Accept: 'application/json',
-                },
-                credentials: 'same-origin',
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to load comments.');
+            if (append) {
+                loadingMoreRef.current = true;
+                setLoadingMore(true);
+            } else {
+                setCommentsLoading(true);
             }
 
-            const result: { comments: CommentItem[] } = await response.json();
+            try {
+                const response = await fetch(
+                    `/posts/${post.id}/comments?page=${page}`,
+                    {
+                        method: 'GET',
+                        headers: {
+                            Accept: 'application/json',
+                        },
+                        credentials: 'same-origin',
+                    },
+                );
 
-            setComments(result.comments);
-            setFeedback('');
-        } catch {
-            setFeedback('Could not load comments. Please try again.');
-        } finally {
-            setCommentsLoading(false);
-        }
-    }, [post.id]);
+                if (!response.ok) {
+                    throw new Error('Failed to load comments.');
+                }
+
+                const result: CommentsResponse = await response.json();
+
+                setComments((current) => {
+                    if (!append) return result.comments;
+
+                    const existingIds = new Set(
+                        current.map((comment) => comment.id),
+                    );
+
+                    return [
+                        ...current,
+                        ...result.comments.filter(
+                            (comment) => !existingIds.has(comment.id),
+                        ),
+                    ];
+                });
+
+                setCommentsPage(result.current_page);
+                setHasMoreComments(
+                    result.current_page < result.last_page,
+                );
+                setTotalComments(result.total);
+                setFeedback('');
+            } catch {
+                setFeedback('Could not load comments. Please try again.');
+            } finally {
+                if (append) {
+                    loadingMoreRef.current = false;
+                    setLoadingMore(false);
+                } else {
+                    setCommentsLoading(false);
+                }
+            }
+        },
+        [post.id],
+    );
 
     useEffect(() => {
         if (commentsOpen) {
-            void loadComments();
+            void loadComments(1, false);
         }
     }, [commentsOpen, loadComments]);
 
@@ -85,12 +138,37 @@ export default function PostActions({ post }: PostActionsProps) {
                 preserveScroll: true,
                 onSuccess: () => {
                     setCommentText('');
-                    setCommentsOpen(true);
-                    void loadComments();
+
+                    if (commentsOpen) {
+                        void loadComments(1, false);
+                    } else {
+                        setCommentsOpen(true);
+                    }
                 },
                 onError: () => {
                     setFeedback(
                         'Could not publish your comment. Please try again.',
+                    );
+                },
+            },
+        );
+    }
+
+    function editComment(commentId: number, body: string) {
+        setFeedback('');
+
+        router.patch(
+            `/comments/${commentId}`,
+            { body },
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    void loadComments(1, false);
+                    setFeedback('Comment updated.');
+                },
+                onError: () => {
+                    setFeedback(
+                        'Could not edit your comment. Please try again.',
                     );
                 },
             },
@@ -105,6 +183,22 @@ export default function PostActions({ post }: PostActionsProps) {
         if (!body) return;
 
         publishComment(body);
+    }
+
+    function handleCommentsScroll(event: UIEvent<HTMLDivElement>) {
+        const element = event.currentTarget;
+        const nearBottom =
+            element.scrollTop + element.clientHeight >=
+            element.scrollHeight - 80;
+
+        if (
+            nearBottom &&
+            hasMoreComments &&
+            !commentsLoading &&
+            !loadingMore
+        ) {
+            void loadComments(commentsPage + 1, true);
+        }
     }
 
     async function copyPostLink() {
@@ -164,7 +258,7 @@ export default function PostActions({ post }: PostActionsProps) {
                 >
                     <span aria-hidden="true">▢</span>
                     <span>Comment</span>
-                    <span>{post.comments_count ?? 0}</span>
+                    <span>{totalComments}</span>
                 </button>
 
                 <button
@@ -232,17 +326,51 @@ export default function PostActions({ post }: PostActionsProps) {
                             Loading comments...
                         </p>
                     ) : comments.length > 0 ? (
-                        <div className="space-y-4">
-                            {comments.map((comment) => (
-                                <CommentThread
-                                    key={comment.id}
-                                    comment={comment}
-                                    onReply={(parentId, body) => {
-                                        publishComment(body, parentId);
-                                    }}
-                                />
-                            ))}
-                        </div>
+                        <>
+                            <div
+                                onScroll={handleCommentsScroll}
+                                className="max-h-[420px] space-y-4 overflow-y-auto overscroll-contain pr-1"
+                                aria-label="Comments"
+                            >
+                                {comments.map((comment) => (
+                                    <CommentThread
+                                        key={comment.id}
+                                        comment={comment}
+                                        onReply={(parentId, body) => {
+                                            publishComment(body, parentId);
+                                        }}
+                                        onEdit={editComment}
+                                    />
+                                ))}
+
+                                {loadingMore && (
+                                    <p
+                                        role="status"
+                                        className="py-2 text-center text-sm text-gray-500 dark:text-gray-400"
+                                    >
+                                        Loading older comments...
+                                    </p>
+                                )}
+                            </div>
+
+                            {hasMoreComments && (
+                                <button
+                                    type="button"
+                                    disabled={loadingMore}
+                                    onClick={() =>
+                                        void loadComments(
+                                            commentsPage + 1,
+                                            true,
+                                        )
+                                    }
+                                    className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800"
+                                >
+                                    {loadingMore
+                                        ? 'Loading...'
+                                        : 'Load older comments'}
+                                </button>
+                            )}
+                        </>
                     ) : (
                         <p className="text-sm text-gray-500 dark:text-gray-400">
                             No comments yet. Start the conversation!

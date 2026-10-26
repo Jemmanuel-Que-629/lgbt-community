@@ -1,3 +1,4 @@
+
 export type User = {
     id: number;
     username: string;
@@ -32,8 +33,10 @@ export type CommentItem = {
     id: number;
     body: string;
     created_at: string;
+    updated_at: string;
     user: User;
     parent_id: number | null;
+    can_edit?: boolean;
     replies?: CommentItem[];
 };
 

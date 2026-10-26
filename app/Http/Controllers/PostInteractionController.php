@@ -11,6 +11,8 @@ use Illuminate\Validation\Rule;
 
 class PostInteractionController extends Controller
 {
+    private const COMMENTS_PER_PAGE = 20;
+
     public function toggleReaction(
         Request $request,
         Post $post
@@ -48,27 +50,58 @@ class PostInteractionController extends Controller
         return back();
     }
 
-    public function indexComments(Post $post): JsonResponse
-    {
-        $comments = Comment::query()
+    public function indexComments(
+        Request $request,
+        Post $post
+    ): JsonResponse {
+        // Paginate top-level comments, newest first.
+        $paginator = Comment::query()
             ->where('post_id', $post->id)
+            ->whereNull('parent_id')
             ->with('user:id,username')
-            ->orderBy('created_at')
-            ->orderBy('id')
-            ->get();
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->paginate(self::COMMENTS_PER_PAGE)
+            ->withQueryString();
 
-        $commentsById = $comments->keyBy('id');
+        $roots = collect($paginator->items());
+        $allComments = collect();
+        $parentIds = $roots->pluck('id')->all();
 
-        foreach ($comments as $comment) {
-            $comment->setRelation('replies', collect());
+        // Collect descendants for the displayed top-level comments.
+        // This preserves nested replies at every depth.
+        while ($parentIds !== []) {
+            $children = Comment::query()
+                ->where('post_id', $post->id)
+                ->whereIn('parent_id', $parentIds)
+                ->with('user:id,username')
+                ->orderByDesc('created_at')
+                ->orderByDesc('id')
+                ->get();
+
+            if ($children->isEmpty()) {
+                break;
+            }
+
+            $allComments = $allComments->concat($children);
+            $parentIds = $children->pluck('id')->all();
         }
 
-        $roots = collect();
+        $allDisplayedComments = $roots->concat($allComments);
 
-        foreach ($comments as $comment) {
+        foreach ($allDisplayedComments as $comment) {
+            $comment->setRelation('replies', collect());
+            $comment->setAttribute(
+                'can_edit',
+                (int) $comment->user_id === (int) $request->user()->id
+            );
+        }
+
+        $commentsById = $allDisplayedComments->keyBy('id');
+
+        // Rebuild the tree using the parent IDs.
+        foreach ($allDisplayedComments as $comment) {
             if ($comment->parent_id === null) {
-                $roots->push($comment);
-
                 continue;
             }
 
@@ -81,6 +114,11 @@ class PostInteractionController extends Controller
 
         return response()->json([
             'comments' => $roots->values(),
+            'current_page' => $paginator->currentPage(),
+            'last_page' => $paginator->lastPage(),
+            'total' => Comment::query()
+            ->where('post_id', $post->id)
+            ->count(),
         ]);
     }
 
@@ -107,14 +145,40 @@ class PostInteractionController extends Controller
             Comment::query()
                 ->where('post_id', $post->id)
                 ->findOrFail($parentId);
-
-            // Replies to replies are allowed.
-            // The parent must belong to this post.
         }
 
         $post->comments()->create([
             'user_id' => $request->user()->id,
             'parent_id' => $parentId,
+            'body' => $body,
+        ]);
+
+        return back();
+    }
+
+    public function updateComment(
+        Request $request,
+        Comment $comment
+    ): RedirectResponse {
+        // Never trust the frontend's can_edit flag.
+        abort_unless(
+            (int) $comment->user_id === (int) $request->user()->id,
+            403
+        );
+
+        $validated = $request->validate([
+            'body' => ['required', 'string', 'max:2000'],
+        ]);
+
+        $body = trim($validated['body']);
+
+        if ($body === '') {
+            return back()->withErrors([
+                'body' => 'A comment cannot be empty.',
+            ]);
+        }
+
+        $comment->update([
             'body' => $body,
         ]);
 
