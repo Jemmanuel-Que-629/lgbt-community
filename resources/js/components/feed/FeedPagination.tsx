@@ -8,7 +8,10 @@ export default function FeedPagination({ posts }: FeedPaginationProps) {
     if (posts.last_page <= 1) return null;
 
     return (
-        <nav aria-label="Feed pagination" className="mt-6 flex items-center justify-between">
+        <nav
+            aria-label="Feed pagination"
+            className="mt-6 flex items-center justify-between"
+        >
             {posts.prev_page_url ? (
                 <a
                     href={posts.prev_page_url}

@@ -11,6 +11,9 @@ use Inertia\Response;
 
 class FeedController extends Controller
 {
+    /**
+     * @return Builder<Post>
+     */
     private function postsQuery(): Builder
     {
         return Post::query()

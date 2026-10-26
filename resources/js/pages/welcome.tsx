@@ -16,11 +16,10 @@ export default function Welcome() {
             <Head title="LGBTIA Community | You Belong Here" />
 
             <div className="relative min-h-screen overflow-x-hidden bg-[#17111F] font-sans text-white antialiased selection:bg-[#D4AF37] selection:text-[#17111F]">
-
                 {/* Background */}
                 <div className="pointer-events-none absolute inset-0 overflow-hidden">
-                    <div className="absolute -left-40 top-20 h-[500px] w-[500px] rounded-full bg-[#E83E8C]/10 blur-[140px]" />
-                    <div className="absolute right-[-180px] top-[30%] h-[500px] w-[500px] rounded-full bg-[#6C2BD9]/15 blur-[140px]" />
+                    <div className="absolute top-20 -left-40 h-[500px] w-[500px] rounded-full bg-[#E83E8C]/10 blur-[140px]" />
+                    <div className="absolute top-[30%] right-[-180px] h-[500px] w-[500px] rounded-full bg-[#6C2BD9]/15 blur-[140px]" />
                     <div className="absolute bottom-[-150px] left-[35%] h-[450px] w-[450px] rounded-full bg-[#2563EB]/10 blur-[140px]" />
                 </div>
 
@@ -91,13 +90,11 @@ export default function Welcome() {
                 </header>
 
                 <main className="relative z-10">
-
                     {/* HERO */}
-                    <section className="relative overflow-hidden px-6 pb-16 pt-20 lg:px-8 lg:pb-20 lg:pt-28">
+                    <section className="relative overflow-hidden px-6 pt-20 pb-16 lg:px-8 lg:pt-28 lg:pb-20">
                         <div className="mx-auto flex max-w-4xl flex-col items-center text-center">
-
                             <div
-                                className={`mb-6 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-1.5 text-xs font-semibold uppercase tracking-wider shadow-sm transition-all duration-700 ${
+                                className={`mb-6 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-1.5 text-xs font-semibold tracking-wider uppercase shadow-sm transition-all duration-700 ${
                                     mounted
                                         ? 'translate-y-0 opacity-100'
                                         : 'translate-y-6 opacity-0'
@@ -106,13 +103,13 @@ export default function Welcome() {
                                 <span className="h-2 w-2 rounded-full bg-[#E83E8C]" />
 
                                 <span className="bg-gradient-to-r from-[#F472B6] via-[#C084FC] to-[#60A5FA] bg-clip-text text-transparent">
-                                    Whoever you are, whatever your story —
-                                    you are welcome here.
+                                    Whoever you are, whatever your story — you
+                                    are welcome here.
                                 </span>
                             </div>
 
                             <h1
-                                className={`text-4xl font-extrabold leading-tight tracking-tight text-white transition-all delay-200 duration-700 sm:text-6xl lg:text-7xl ${
+                                className={`text-4xl leading-tight font-extrabold tracking-tight text-white transition-all delay-200 duration-700 sm:text-6xl lg:text-7xl ${
                                     mounted
                                         ? 'translate-y-0 opacity-100'
                                         : 'translate-y-8 opacity-0'
@@ -133,9 +130,9 @@ export default function Welcome() {
                                 }`}
                             >
                                 A welcoming community where LGBTIA individuals
-                                can share experiences, discover new
-                                communities, start conversations, and connect
-                                with people who understand.
+                                can share experiences, discover new communities,
+                                start conversations, and connect with people who
+                                understand.
                             </p>
 
                             <div
@@ -172,24 +169,23 @@ export default function Welcome() {
                             }`}
                         >
                             <div className="grid overflow-hidden rounded-3xl border border-white/10 bg-[#21182A] shadow-2xl shadow-black/30 lg:grid-cols-2">
-
                                 {/* MESSAGE */}
                                 <div className="flex flex-col justify-center p-8 sm:p-10 lg:p-14">
-                                    <span className="mb-5 text-sm font-semibold uppercase tracking-[0.2em] text-[#D4AF37]">
+                                    <span className="mb-5 text-sm font-semibold tracking-[0.2em] text-[#D4AF37] uppercase">
                                         A space for you
                                     </span>
 
-                                    <h2 className="text-3xl font-bold leading-tight sm:text-4xl">
+                                    <h2 className="text-3xl leading-tight font-bold sm:text-4xl">
                                         You don't have to figure everything out
                                         alone.
                                     </h2>
 
                                     <p className="mt-5 text-base leading-7 text-white/60">
                                         Sometimes you just want somewhere to
-                                        talk. Somewhere to ask a question,
-                                        share a little victory, meet someone
-                                        with a similar experience, or simply
-                                        know that you're not the only one.
+                                        talk. Somewhere to ask a question, share
+                                        a little victory, meet someone with a
+                                        similar experience, or simply know that
+                                        you're not the only one.
                                     </p>
 
                                     <p className="mt-4 text-base leading-7 text-white/60">
@@ -217,11 +213,11 @@ export default function Welcome() {
 
                                     <div className="absolute inset-0 bg-gradient-to-t from-[#17111F]/70 via-transparent to-[#7C3AED]/10" />
 
-                                    <div className="absolute bottom-6 left-6 right-6">
+                                    <div className="absolute right-6 bottom-6 left-6">
                                         <div className="inline-flex rounded-lg border border-white/10 bg-black/35 px-4 py-2.5 backdrop-blur-md">
                                             <span className="text-sm font-medium text-white">
-                                                Real people. Real stories.
-                                                Real connections.
+                                                Real people. Real stories. Real
+                                                connections.
                                             </span>
                                         </div>
                                     </div>
@@ -233,9 +229,8 @@ export default function Welcome() {
                     {/* COMMUNITY PILLARS */}
                     <section className="border-y border-white/10 bg-[#1C1524]/80 py-20 backdrop-blur-md">
                         <div className="mx-auto max-w-7xl px-6 lg:px-8">
-
                             <div className="mx-auto mb-14 max-w-2xl text-center">
-                                <span className="text-xs font-bold uppercase tracking-[0.2em] text-[#D4AF37]">
+                                <span className="text-xs font-bold tracking-[0.2em] text-[#D4AF37] uppercase">
                                     What's inside
                                 </span>
 
@@ -245,13 +240,12 @@ export default function Welcome() {
 
                                 <p className="mt-4 text-base leading-7 text-white/55">
                                     Different people, different stories, and
-                                    different communities — all sharing the
-                                    same space.
+                                    different communities — all sharing the same
+                                    space.
                                 </p>
                             </div>
 
                             <div className="grid gap-6 md:grid-cols-3">
-
                                 {/* CARD 1 */}
                                 <div className="group rounded-2xl border border-white/10 bg-white/[0.025] p-7 shadow-lg transition-all duration-300 hover:-translate-y-1 hover:border-[#E83E8C]/40 hover:bg-white/[0.04]">
                                     <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-xl bg-[#E83E8C]/10 text-xl">
@@ -280,9 +274,9 @@ export default function Welcome() {
                                     </h3>
 
                                     <p className="mt-3 text-sm leading-6 text-white/55">
-                                        Discover communities built around
-                                        shared interests, identities,
-                                        experiences, and everyday life.
+                                        Discover communities built around shared
+                                        interests, identities, experiences, and
+                                        everyday life.
                                     </p>
                                 </div>
 

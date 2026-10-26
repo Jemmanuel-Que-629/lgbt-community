@@ -31,8 +31,7 @@ export default function PostMediaViewer({
                 return;
             }
 
-            const position =
-                imageIndexes.indexOf(currentViewerIndex);
+            const position = imageIndexes.indexOf(currentViewerIndex);
 
             if (event.key === 'ArrowLeft' && position > 0) {
                 onNavigate(imageIndexes[position - 1]);
@@ -80,14 +79,14 @@ export default function PostMediaViewer({
                 <button
                     type="button"
                     onClick={onClose}
-                    className="absolute right-3 top-3 z-30 rounded-full bg-black/60 px-3 py-1 text-3xl leading-none text-white hover:bg-black/80"
+                    className="absolute top-3 right-3 z-30 rounded-full bg-black/60 px-3 py-1 text-3xl leading-none text-white hover:bg-black/80"
                     aria-label="Close image viewer"
                 >
                     ×
                 </button>
 
                 <section className="relative flex min-h-0 flex-1 items-center justify-center bg-black">
-                    <div className="absolute left-3 top-3 z-10 rounded-full bg-black/60 px-3 py-1 text-sm text-white">
+                    <div className="absolute top-3 left-3 z-10 rounded-full bg-black/60 px-3 py-1 text-sm text-white">
                         {viewerPosition + 1} / {imageIndexes.length}
                     </div>
 
@@ -95,9 +94,7 @@ export default function PostMediaViewer({
                         <button
                             type="button"
                             onClick={() =>
-                                onNavigate(
-                                    imageIndexes[viewerPosition - 1],
-                                )
+                                onNavigate(imageIndexes[viewerPosition - 1])
                             }
                             className="absolute left-2 z-10 rounded-full bg-white/10 px-4 py-3 text-3xl text-white hover:bg-white/20 sm:left-4"
                             aria-label="Previous image"
@@ -117,9 +114,7 @@ export default function PostMediaViewer({
                             <button
                                 type="button"
                                 onClick={() =>
-                                    onNavigate(
-                                        imageIndexes[viewerPosition + 1],
-                                    )
+                                    onNavigate(imageIndexes[viewerPosition + 1])
                                 }
                                 className="absolute right-2 z-10 rounded-full bg-white/10 px-4 py-3 text-3xl text-white hover:bg-white/20 sm:right-4"
                                 aria-label="Next image"
@@ -129,8 +124,8 @@ export default function PostMediaViewer({
                         )}
                 </section>
 
-                <aside className="max-h-[48%] shrink-0 overflow-y-auto bg-white p-4 dark:bg-gray-900 md:max-h-full md:w-[380px] md:max-w-[40%]">
-                    <div className="mb-4 border-b border-gray-200 pb-4 pr-10 dark:border-gray-800">
+                <aside className="max-h-[48%] shrink-0 overflow-y-auto bg-white p-4 md:max-h-full md:w-[380px] md:max-w-[40%] dark:bg-gray-900">
+                    <div className="mb-4 border-b border-gray-200 pr-10 pb-4 dark:border-gray-800">
                         <p className="font-semibold text-gray-900 dark:text-white">
                             @{post.user.username}
                         </p>
@@ -151,7 +146,7 @@ export default function PostMediaViewer({
                         </h2>
 
                         {post.body && (
-                            <p className="mt-2 whitespace-pre-wrap break-words text-sm text-gray-700 dark:text-gray-300">
+                            <p className="mt-2 text-sm break-words whitespace-pre-wrap text-gray-700 dark:text-gray-300">
                                 {post.body}
                             </p>
                         )}

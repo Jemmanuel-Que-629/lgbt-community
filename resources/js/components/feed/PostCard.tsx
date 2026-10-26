@@ -36,14 +36,12 @@ export default function PostCard({ post }: PostCardProps) {
             </h2>
 
             {post.body && (
-                <p className="mt-3 whitespace-pre-wrap break-words text-gray-700 dark:text-gray-300">
+                <p className="mt-3 break-words whitespace-pre-wrap text-gray-700 dark:text-gray-300">
                     {post.body}
                 </p>
             )}
 
-            {post.media.length > 0 && (
-                <PostMediaCarousel post={post} />
-            )}
+            {post.media.length > 0 && <PostMediaCarousel post={post} />}
 
             <PostActions post={post} />
         </article>

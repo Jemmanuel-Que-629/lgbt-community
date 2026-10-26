@@ -7,9 +7,7 @@ type PostMediaCarouselProps = {
     post: Post;
 };
 
-export default function PostMediaCarousel({
-    post,
-}: PostMediaCarouselProps) {
+export default function PostMediaCarousel({ post }: PostMediaCarouselProps) {
     const media = post.media;
 
     const [currentIndex, setCurrentIndex] = useState(0);
@@ -23,17 +21,14 @@ export default function PostMediaCarousel({
         setViewerIndex((current) => {
             if (current === null) return null;
 
-            return media[current] &&
-                media[current].type !== 'video'
+            return media[current] && media[current].type !== 'video'
                 ? current
                 : null;
         });
     }, [media]);
 
     const imageIndexes = media
-        .map((item, index) =>
-            item.type === 'video' ? -1 : index,
-        )
+        .map((item, index) => (item.type === 'video' ? -1 : index))
         .filter((index) => index >= 0);
 
     if (media.length === 0) return null;
@@ -82,9 +77,7 @@ export default function PostMediaCarousel({
                         ) : (
                             <button
                                 type="button"
-                                onClick={() =>
-                                    setViewerIndex(currentIndex)
-                                }
+                                onClick={() => setViewerIndex(currentIndex)}
                                 className="flex max-h-[450px] w-full cursor-zoom-in items-center justify-center"
                                 aria-label="Open image in full screen"
                             >

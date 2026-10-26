@@ -16,6 +16,7 @@ class PostMedia extends Model
         'size',
     ];
 
+    /** @return BelongsTo<Post, $this> */
     public function post(): BelongsTo
     {
         return $this->belongsTo(Post::class);

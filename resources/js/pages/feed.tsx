@@ -8,9 +8,11 @@ import type { FeedProps } from '@/types/feed';
 
 export default function Feed({ posts, communities }: FeedProps) {
     const page = usePage();
-    const flash = (page.props as typeof page.props & {
-        flash?: { success?: string | null };
-    }).flash;
+    const flash = (
+        page.props as typeof page.props & {
+            flash?: { success?: string | null };
+        }
+    ).flash;
 
     const [toast, setToast] = useState('');
     const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -29,7 +31,7 @@ export default function Feed({ posts, communities }: FeedProps) {
                 <div
                     role="status"
                     aria-live="polite"
-                    className="fixed right-5 top-5 z-[100] flex items-center gap-3 rounded-xl bg-green-600 px-5 py-3 font-medium text-white shadow-lg"
+                    className="fixed top-5 right-5 z-[100] flex items-center gap-3 rounded-xl bg-green-600 px-5 py-3 font-medium text-white shadow-lg"
                 >
                     <span aria-hidden="true">✓</span>
                     <span>{toast}</span>
@@ -72,12 +74,15 @@ export default function Feed({ posts, communities }: FeedProps) {
                                 No posts yet
                             </h2>
                             <p className="mt-2 text-gray-600 dark:text-gray-400">
-                                Be the first to share something with the community!
+                                Be the first to share something with the
+                                community!
                             </p>
                         </section>
                     ) : (
                         <div className="space-y-5">
-                            {posts.data.map((post) => <PostCard key={post.id} post={post} />)}
+                            {posts.data.map((post) => (
+                                <PostCard key={post.id} post={post} />
+                            ))}
                         </div>
                     )}
 

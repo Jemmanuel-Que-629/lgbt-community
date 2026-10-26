@@ -49,11 +49,13 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
         ];
     }
 
+    /** @return HasMany<Community, $this> */
     public function communities(): HasMany
     {
         return $this->hasMany(Community::class);
     }
 
+    /** @return HasMany<Post, $this> */
     public function posts(): HasMany
     {
         return $this->hasMany(Post::class);

@@ -26,30 +26,24 @@ export default function PostActions({ post }: PostActionsProps) {
         setCommentsLoading(true);
 
         try {
-            const response = await fetch(
-                `/posts/${post.id}/comments`,
-                {
-                    method: 'GET',
-                    headers: {
-                        Accept: 'application/json',
-                    },
-                    credentials: 'same-origin',
+            const response = await fetch(`/posts/${post.id}/comments`, {
+                method: 'GET',
+                headers: {
+                    Accept: 'application/json',
                 },
-            );
+                credentials: 'same-origin',
+            });
 
             if (!response.ok) {
                 throw new Error('Failed to load comments.');
             }
 
-            const result: { comments: CommentItem[] } =
-                await response.json();
+            const result: { comments: CommentItem[] } = await response.json();
 
             setComments(result.comments);
             setFeedback('');
         } catch {
-            setFeedback(
-                'Could not load comments. Please try again.',
-            );
+            setFeedback('Could not load comments. Please try again.');
         } finally {
             setCommentsLoading(false);
         }
@@ -78,19 +72,14 @@ export default function PostActions({ post }: PostActionsProps) {
         );
     }
 
-    function publishComment(
-        body: string,
-        parentId: number | null = null,
-    ) {
+    function publishComment(body: string, parentId: number | null = null) {
         setFeedback('');
 
         router.post(
             `/posts/${post.id}/comments`,
             {
                 body,
-                ...(parentId !== null
-                    ? { parent_id: parentId }
-                    : {}),
+                ...(parentId !== null ? { parent_id: parentId } : {}),
             },
             {
                 preserveScroll: true,
@@ -119,16 +108,13 @@ export default function PostActions({ post }: PostActionsProps) {
     }
 
     async function copyPostLink() {
-        const url =
-            `${window.location.origin}/feed#post-${post.id}`;
+        const url = `${window.location.origin}/feed#post-${post.id}`;
 
         try {
             await navigator.clipboard.writeText(url);
         } catch {
             window.prompt('Copy this post link:', url);
-            setFeedback(
-                'Copy the link above to share this post.',
-            );
+            setFeedback('Copy the link above to share this post.');
             return;
         }
 
@@ -165,18 +151,14 @@ export default function PostActions({ post }: PostActionsProps) {
                             : 'text-gray-600 dark:text-gray-300'
                     }`}
                 >
-                    <span aria-hidden="true">
-                        {isLiked ? '♥' : '♡'}
-                    </span>
+                    <span aria-hidden="true">{isLiked ? '♥' : '♡'}</span>
                     <span>{isLiked ? 'Liked' : 'Like'}</span>
                     <span>{post.reactions_count ?? 0}</span>
                 </button>
 
                 <button
                     type="button"
-                    onClick={() =>
-                        setCommentsOpen((open) => !open)
-                    }
+                    onClick={() => setCommentsOpen((open) => !open)}
                     aria-expanded={commentsOpen}
                     className={`${actionClass} text-gray-600 dark:text-gray-300`}
                 >
@@ -187,9 +169,7 @@ export default function PostActions({ post }: PostActionsProps) {
 
                 <button
                     type="button"
-                    onClick={() =>
-                        setShareOpen((open) => !open)
-                    }
+                    onClick={() => setShareOpen((open) => !open)}
                     aria-expanded={shareOpen}
                     className={`${actionClass} text-gray-600 dark:text-gray-300`}
                 >
@@ -206,8 +186,8 @@ export default function PostActions({ post }: PostActionsProps) {
                     </p>
 
                     <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                        Copy a link to share this post. The link
-                        currently points to your signed-in feed.
+                        Copy a link to share this post. The link currently
+                        points to your signed-in feed.
                     </p>
 
                     <button
@@ -222,10 +202,7 @@ export default function PostActions({ post }: PostActionsProps) {
 
             {commentsOpen && (
                 <section className="mt-3 space-y-4">
-                    <form
-                        onSubmit={submitComment}
-                        className="flex gap-2"
-                    >
+                    <form onSubmit={submitComment} className="flex gap-2">
                         <input
                             value={commentText}
                             onChange={(event) =>
@@ -261,10 +238,7 @@ export default function PostActions({ post }: PostActionsProps) {
                                     key={comment.id}
                                     comment={comment}
                                     onReply={(parentId, body) => {
-                                        publishComment(
-                                            body,
-                                            parentId,
-                                        );
+                                        publishComment(body, parentId);
                                     }}
                                 />
                             ))}

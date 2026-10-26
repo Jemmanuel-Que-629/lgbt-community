@@ -34,16 +34,15 @@ export default function CommentThread({
             <article
                 className="rounded-xl bg-gray-100 p-3 dark:bg-gray-800"
                 style={{
-                    marginLeft: depth > 0
-                        ? `${Math.min(depth, 5) * 12}px`
-                        : '0',
+                    marginLeft:
+                        depth > 0 ? `${Math.min(depth, 5) * 12}px` : '0',
                 }}
             >
                 <p className="text-sm font-semibold text-gray-900 dark:text-white">
                     @{comment.user.username}
                 </p>
 
-                <p className="mt-1 whitespace-pre-wrap break-words text-sm text-gray-700 dark:text-gray-300">
+                <p className="mt-1 text-sm break-words whitespace-pre-wrap text-gray-700 dark:text-gray-300">
                     {comment.body}
                 </p>
 
@@ -57,10 +56,7 @@ export default function CommentThread({
                 </button>
 
                 {replying && (
-                    <form
-                        onSubmit={submitReply}
-                        className="mt-3 flex gap-2"
-                    >
+                    <form onSubmit={submitReply} className="mt-3 flex gap-2">
                         <input
                             value={body}
                             onChange={(event) => setBody(event.target.value)}

@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Community;
-use App\Models\Post;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -22,7 +21,6 @@ class PostController extends Controller
         ]);
     }
 
-    
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
@@ -69,5 +67,4 @@ class PostController extends Controller
             ->route('feed')
             ->with('success', 'Your post has been published!');
     }
-
 }

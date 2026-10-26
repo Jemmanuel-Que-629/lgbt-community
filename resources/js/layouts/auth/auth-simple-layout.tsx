@@ -10,12 +10,11 @@ export default function AuthSimpleLayout({
 }: AuthLayoutProps) {
     return (
         <div className="relative flex min-h-svh flex-col items-center justify-center gap-6 overflow-hidden bg-[#17111F] p-6 md:p-10">
-
             {/* Background glow */}
             <div className="pointer-events-none absolute inset-0 overflow-hidden">
-                <div className="absolute -left-40 -top-40 h-[500px] w-[500px] rounded-full bg-[#E83E8C]/10 blur-[120px]" />
+                <div className="absolute -top-40 -left-40 h-[500px] w-[500px] rounded-full bg-[#E83E8C]/10 blur-[120px]" />
 
-                <div className="absolute right-[-150px] top-[20%] h-[500px] w-[500px] rounded-full bg-[#7C3AED]/10 blur-[130px]" />
+                <div className="absolute top-[20%] right-[-150px] h-[500px] w-[500px] rounded-full bg-[#7C3AED]/10 blur-[130px]" />
 
                 <div className="absolute bottom-[-200px] left-[30%] h-[450px] w-[450px] rounded-full bg-[#2563EB]/10 blur-[130px]" />
             </div>
@@ -23,7 +22,6 @@ export default function AuthSimpleLayout({
             {/* Auth content */}
             <div className="relative z-10 w-full max-w-sm">
                 <div className="flex flex-col gap-8">
-
                     {/* Logo + heading */}
                     <div className="flex flex-col items-center gap-4">
                         <Link

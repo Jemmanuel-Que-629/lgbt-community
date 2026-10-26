@@ -37,4 +37,4 @@ Route::middleware(['auth', 'verified'])->group(function () {
     )->name('posts.share');
 });
 
-require __DIR__ . '/settings.php';
+require __DIR__.'/settings.php';

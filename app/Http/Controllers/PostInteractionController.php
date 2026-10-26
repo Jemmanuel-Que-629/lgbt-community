@@ -59,17 +59,16 @@ class PostInteractionController extends Controller
 
         $commentsById = $comments->keyBy('id');
 
-        // Initialize a replies collection for every comment.
         foreach ($comments as $comment) {
             $comment->setRelation('replies', collect());
         }
 
         $roots = collect();
 
-        // Build the nested tree in memory.
         foreach ($comments as $comment) {
             if ($comment->parent_id === null) {
                 $roots->push($comment);
+
                 continue;
             }
 
@@ -105,12 +104,12 @@ class PostInteractionController extends Controller
         $parentId = $validated['parent_id'] ?? null;
 
         if ($parentId !== null) {
-            $parent = Comment::query()
+            Comment::query()
                 ->where('post_id', $post->id)
                 ->findOrFail($parentId);
 
             // Replies to replies are allowed.
-            // The parent must still belong to this post.
+            // The parent must belong to this post.
         }
 
         $post->comments()->create([

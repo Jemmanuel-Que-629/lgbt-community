@@ -22,7 +22,7 @@ return [
         'key' => env('RESEND_API_KEY'),
     ],
 
-     'mailgun' => [
+    'mailgun' => [
         'domain' => env('MAILGUN_DOMAIN'),
         'secret' => env('MAILGUN_SECRET'),
         'endpoint' => env('MAILGUN_ENDPOINT', 'api.mailgun.net'),

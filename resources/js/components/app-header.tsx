@@ -33,10 +33,14 @@ import { useCurrentUrl } from '@/hooks/use-current-url';
 import { useInitials } from '@/hooks/use-initials';
 import { cn, toUrl } from '@/lib/utils';
 import { dashboard } from '@/routes';
-import type { BreadcrumbItem, NavItem } from '@/types';
+import type { Auth, BreadcrumbItem, NavItem } from '@/types';
 
 type Props = {
     breadcrumbs?: BreadcrumbItem[];
+};
+
+type AppHeaderPageProps = {
+    auth: Auth;
 };
 
 const mainNavItems: NavItem[] = [
@@ -64,8 +68,7 @@ const activeItemStyles =
     'text-neutral-900 dark:bg-neutral-800 dark:text-neutral-100';
 
 export function AppHeader({ breadcrumbs = [] }: Props) {
-    const page = usePage();
-    const { auth } = page.props;
+    const { auth } = usePage<AppHeaderPageProps>().props;
     const getInitials = useInitials();
     const { isCurrentUrl, whenCurrentUrl } = useCurrentUrl();
 
@@ -218,11 +221,26 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                                 >
                                     <Avatar className="size-8 overflow-hidden rounded-full">
                                         <AvatarImage
-                                            src={auth.user?.avatar}
-                                            alt={auth.user?.name}
+                                            src={
+                                                typeof auth.user?.avatar ===
+                                                'string'
+                                                    ? auth.user.avatar
+                                                    : undefined
+                                            }
+                                            alt={
+                                                typeof auth.user?.name ===
+                                                'string'
+                                                    ? auth.user.name
+                                                    : ''
+                                            }
                                         />
                                         <AvatarFallback className="rounded-lg bg-neutral-200 text-black dark:bg-neutral-700 dark:text-white">
-                                            {getInitials(auth.user?.name ?? '')}
+                                            {getInitials(
+                                                typeof auth.user?.name ===
+                                                    'string'
+                                                    ? auth.user.name
+                                                    : '',
+                                            )}
                                         </AvatarFallback>
                                     </Avatar>
                                 </Button>
