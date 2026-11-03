@@ -14,6 +14,8 @@ class Community extends Model
         'name',
         'slug',
         'description',
+        'category',
+        'image_path',
     ];
 
     protected static function booted(): void

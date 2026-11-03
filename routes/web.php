@@ -1,10 +1,9 @@
-
 <?php
 
+use App\Http\Controllers\CommunityController;
 use App\Http\Controllers\FeedController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\PostInteractionController;
-use App\Http\Controllers\CommunityController;
 use Illuminate\Support\Facades\Route;
 
 Route::inertia('/', 'welcome')->name('home');
@@ -43,14 +42,25 @@ Route::middleware(['auth', 'verified'])->group(function () {
         [PostInteractionController::class, 'share']
     )->name('posts.share');
 
+    // Community routes
     Route::get('/communities', [CommunityController::class, 'index'])
-    ->name('communities.index');
+        ->name('communities.index');
 
-    Route::post('/communities/{community:slug}/join', [CommunityController::class, 'join'])
-        ->name('communities.join');
+    Route::get('/communities/create', [CommunityController::class, 'create'])
+        ->name('communities.create');
 
-    Route::delete('/communities/{community:slug}/leave', [CommunityController::class, 'leave'])
-        ->name('communities.leave');
+    Route::post('/communities', [CommunityController::class, 'store'])
+        ->name('communities.store');
+
+    Route::post(
+        '/communities/{community:slug}/join',
+        [CommunityController::class, 'join']
+    )->name('communities.join');
+
+    Route::delete(
+        '/communities/{community:slug}/leave',
+        [CommunityController::class, 'leave']
+    )->name('communities.leave');
 });
 
 require __DIR__.'/settings.php';
