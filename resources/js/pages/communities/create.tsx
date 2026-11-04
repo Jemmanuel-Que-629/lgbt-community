@@ -1,20 +1,30 @@
 
 import { Head, Link, useForm } from '@inertiajs/react';
-import { ArrowLeft, ImagePlus, Users, X } from 'lucide-react';
+import {
+    ArrowLeft,
+    ImagePlus,
+    Users,
+    X,
+    Globe2,
+    LockKeyhole,
+} from 'lucide-react';
 import { useEffect, useState } from 'react';
 import type { FormEvent, ChangeEvent } from 'react';
 
 type CreateCommunityProps = {
     categories: string[];
+    visibilities: string[];
 };
 
 export default function CreateCommunity({
     categories,
+    visibilities,
 }: CreateCommunityProps) {
     const { data, setData, post, processing, errors } = useForm({
         name: '',
         description: '',
         category: 'General',
+        visibility: 'public',
         image: null as File | null,
     });
 
@@ -81,6 +91,7 @@ export default function CreateCommunity({
                         </div>
 
                         <form onSubmit={submit} className="space-y-6">
+                            {/* Community name */}
                             <div>
                                 <label
                                     htmlFor="name"
@@ -108,6 +119,7 @@ export default function CreateCommunity({
                                 )}
                             </div>
 
+                            {/* Description */}
                             <div>
                                 <label
                                     htmlFor="description"
@@ -146,6 +158,7 @@ export default function CreateCommunity({
                                 </div>
                             </div>
 
+                            {/* Category */}
                             <div>
                                 <label
                                     htmlFor="category"
@@ -179,6 +192,115 @@ export default function CreateCommunity({
                                 )}
                             </div>
 
+                            {/* Community visibility */}
+                            <div>
+                                <div className="mb-3">
+                                    <h2 className="text-sm font-semibold text-gray-800 dark:text-gray-200">
+                                        Community visibility
+                                    </h2>
+
+                                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                        Choose who can access your community.
+                                    </p>
+                                </div>
+
+                                <div className="grid gap-3 sm:grid-cols-2">
+                                    {visibilities.includes('public') && (
+                                        <label
+                                            className={`flex cursor-pointer gap-3 rounded-xl border p-4 transition ${
+                                                data.visibility === 'public'
+                                                    ? 'border-purple-600 bg-purple-50 ring-1 ring-purple-600 dark:bg-purple-950/30'
+                                                    : 'border-gray-200 hover:border-gray-400 dark:border-gray-700 dark:hover:border-gray-500'
+                                            }`}
+                                        >
+                                            <input
+                                                type="radio"
+                                                name="visibility"
+                                                value="public"
+                                                checked={
+                                                    data.visibility === 'public'
+                                                }
+                                                onChange={() =>
+                                                    setData(
+                                                        'visibility',
+                                                        'public',
+                                                    )
+                                                }
+                                                className="mt-1 accent-purple-700"
+                                            />
+
+                                            <div className="min-w-0">
+                                                <div className="flex items-center gap-2">
+                                                    <Globe2 className="h-5 w-5 text-purple-700 dark:text-purple-400" />
+
+                                                    <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                                                        Public
+                                                    </span>
+                                                </div>
+
+                                                <p className="mt-2 text-xs leading-5 text-gray-600 dark:text-gray-400">
+                                                    Anyone can discover your
+                                                    community and view its
+                                                    posts. People can join
+                                                    immediately.
+                                                </p>
+                                            </div>
+                                        </label>
+                                    )}
+
+                                    {visibilities.includes('private') && (
+                                        <label
+                                            className={`flex cursor-pointer gap-3 rounded-xl border p-4 transition ${
+                                                data.visibility === 'private'
+                                                    ? 'border-purple-600 bg-purple-50 ring-1 ring-purple-600 dark:bg-purple-950/30'
+                                                    : 'border-gray-200 hover:border-gray-400 dark:border-gray-700 dark:hover:border-gray-500'
+                                            }`}
+                                        >
+                                            <input
+                                                type="radio"
+                                                name="visibility"
+                                                value="private"
+                                                checked={
+                                                    data.visibility === 'private'
+                                                }
+                                                onChange={() =>
+                                                    setData(
+                                                        'visibility',
+                                                        'private',
+                                                    )
+                                                }
+                                                className="mt-1 accent-purple-700"
+                                            />
+
+                                            <div className="min-w-0">
+                                                <div className="flex items-center gap-2">
+                                                    <LockKeyhole className="h-5 w-5 text-purple-700 dark:text-purple-400" />
+
+                                                    <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                                                        Private
+                                                    </span>
+                                                </div>
+
+                                                <p className="mt-2 text-xs leading-5 text-gray-600 dark:text-gray-400">
+                                                    Anyone can discover your
+                                                    community, but only
+                                                    approved members can view
+                                                    posts. Joining requires
+                                                    owner approval.
+                                                </p>
+                                            </div>
+                                        </label>
+                                    )}
+                                </div>
+
+                                {errors.visibility && (
+                                    <p className="mt-2 text-sm text-red-600">
+                                        {errors.visibility}
+                                    </p>
+                                )}
+                            </div>
+
+                            {/* Community image */}
                             <div>
                                 <label className="mb-2 block text-sm font-semibold text-gray-800 dark:text-gray-200">
                                     Community image
@@ -236,6 +358,7 @@ export default function CreateCommunity({
                                 )}
                             </div>
 
+                            {/* Form actions */}
                             <div className="flex flex-col-reverse gap-3 border-t border-gray-100 pt-6 dark:border-gray-800 sm:flex-row sm:justify-end">
                                 <Link
                                     href="/communities"

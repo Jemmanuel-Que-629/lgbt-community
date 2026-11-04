@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\CommunityController;
 use App\Http\Controllers\FeedController;
+use App\Http\Controllers\MyCommunityController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\PostInteractionController;
 use Illuminate\Support\Facades\Route;
@@ -43,6 +44,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     )->name('posts.share');
 
     // Community routes
+
     Route::get('/communities', [CommunityController::class, 'index'])
         ->name('communities.index');
 
@@ -51,6 +53,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::post('/communities', [CommunityController::class, 'store'])
         ->name('communities.store');
+
+    Route::get(
+        '/my-communities',
+        [MyCommunityController::class, 'index']
+    )->name('my-communities.index');
 
     Route::post(
         '/communities/{community:slug}/join',
@@ -61,6 +68,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
         '/communities/{community:slug}/leave',
         [CommunityController::class, 'leave']
     )->name('communities.leave');
+
+    Route::patch(
+        '/communities/{community:slug}/join-requests/{joinRequest}/approve',
+        [CommunityController::class, 'approveJoinRequest']
+    )->name('communities.join-requests.approve');
+
+    Route::patch(
+        '/communities/{community:slug}/join-requests/{joinRequest}/reject',
+        [CommunityController::class, 'rejectJoinRequest']
+    )->name('communities.join-requests.reject');
 });
 
 require __DIR__.'/settings.php';

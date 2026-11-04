@@ -7,6 +7,7 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -67,5 +68,56 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
     public function posts(): HasMany
     {
         return $this->hasMany(Post::class);
+    }
+
+    /** @return HasMany<CommunityJoinRequest, $this> */
+    public function communityJoinRequests(): HasMany
+    {
+        return $this->hasMany(CommunityJoinRequest::class);
+    }
+
+    /** @return HasMany<CommunityJoinRequest, $this> */
+    public function reviewedJoinRequests(): HasMany
+    {
+        return $this->hasMany(
+            CommunityJoinRequest::class,
+            'reviewed_by'
+        );
+    }
+
+    /** @return HasMany<Report, $this> */
+    public function submittedReports(): HasMany
+    {
+        return $this->hasMany(Report::class);
+    }
+
+    /** @return HasMany<Report, $this> */
+    public function reviewedReports(): HasMany
+    {
+        return $this->hasMany(Report::class, 'reviewed_by');
+    }
+
+    /** @return BelongsTo<Role, $this> */
+    public function role(): BelongsTo
+    {
+        return $this->belongsTo(Role::class);
+    }
+
+    public function hasRole(string $role): bool
+    {
+        return $this->role()
+            ->where('name', $role)
+            ->exists();
+    }
+
+    public function isModerator(): bool
+    {
+        return $this->hasRole('moderator')
+            || $this->hasRole('admin');
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->hasRole('admin');
     }
 }

@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Support\Str;
 
 class Community extends Model
 {
@@ -15,11 +17,22 @@ class Community extends Model
         'slug',
         'description',
         'category',
+        'visibility',
+        'status',
         'image_path',
     ];
 
     protected static function booted(): void
     {
+        static::saving(function (Community $community): void {
+            if ($community->isDirty('name')) {
+                $community->name = trim($community->name);
+                $community->normalized_name = Str::lower(
+                    trim($community->name)
+                );
+            }
+        });
+
         static::created(function (Community $community): void {
             if ($community->user_id !== null) {
                 $community->members()->syncWithoutDetaching([
@@ -46,5 +59,17 @@ class Community extends Model
     {
         return $this->belongsToMany(User::class)
             ->withTimestamps();
+    }
+
+    /** @return HasMany<CommunityJoinRequest, $this> */
+    public function joinRequests(): HasMany
+    {
+        return $this->hasMany(CommunityJoinRequest::class);
+    }
+
+    /** @return MorphMany<Report, $this> */
+    public function reports(): MorphMany
+    {
+        return $this->morphMany(Report::class, 'reportable');
     }
 }
