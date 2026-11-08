@@ -1,13 +1,5 @@
-
 import { Link } from '@inertiajs/react';
-import {
-    Bookmark,
-    Compass,
-    House,
-    Users,
-    Bell,
-    UserRound,
-} from 'lucide-react';
+import { Bookmark, Compass, House, Users, Bell, UserRound } from 'lucide-react';
 
 import AppLogo from '@/components/app-logo';
 import { NavMain } from '@/components/nav-main';

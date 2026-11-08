@@ -1,4 +1,3 @@
-
 import { Head, Link, useForm } from '@inertiajs/react';
 import { ArrowLeft, ImagePlus, X } from 'lucide-react';
 import { FormEvent, useEffect, useState } from 'react';
@@ -27,9 +26,7 @@ export default function EditCommunity({ community, categories }: Props) {
         remove_image: false,
     });
 
-    const [preview, setPreview] = useState<string | null>(
-        community.image_url
-    );
+    const [preview, setPreview] = useState<string | null>(community.image_url);
 
     useEffect(() => {
         if (!data.image) {
@@ -94,7 +91,7 @@ export default function EditCommunity({ community, categories }: Props) {
 
                 <form
                     onSubmit={submit}
-                    className="space-y-6 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-900 sm:p-7"
+                    className="space-y-6 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-7 dark:border-gray-700 dark:bg-gray-900"
                 >
                     <div>
                         <label
@@ -110,7 +107,7 @@ export default function EditCommunity({ community, categories }: Props) {
                             onChange={(event) =>
                                 setData('name', event.target.value)
                             }
-                            className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition focus:border-purple-600 focus:ring-2 focus:ring-purple-100 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:focus:ring-purple-900"
+                            className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 transition outline-none focus:border-purple-600 focus:ring-2 focus:ring-purple-100 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:focus:ring-purple-900"
                             required
                         />
                         {errors.name && (
@@ -135,7 +132,7 @@ export default function EditCommunity({ community, categories }: Props) {
                             onChange={(event) =>
                                 setData('description', event.target.value)
                             }
-                            className="w-full resize-y rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition focus:border-purple-600 focus:ring-2 focus:ring-purple-100 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:focus:ring-purple-900"
+                            className="w-full resize-y rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 transition outline-none focus:border-purple-600 focus:ring-2 focus:ring-purple-100 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:focus:ring-purple-900"
                             placeholder="What is this community about?"
                         />
                         {errors.description && (
@@ -161,7 +158,7 @@ export default function EditCommunity({ community, categories }: Props) {
                                 setData('category', event.target.value)
                             }
                             placeholder="Choose or enter a category"
-                            className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition focus:border-purple-600 focus:ring-2 focus:ring-purple-100 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:focus:ring-purple-900"
+                            className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 transition outline-none focus:border-purple-600 focus:ring-2 focus:ring-purple-100 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:focus:ring-purple-900"
                         />
                         <datalist id="community-categories">
                             {categories.map((category) => (
@@ -184,11 +181,13 @@ export default function EditCommunity({ community, categories }: Props) {
                         </legend>
 
                         <div className="grid gap-3 sm:grid-cols-2">
-                            <label className={`cursor-pointer rounded-xl border p-4 transition ${
-                                data.visibility === 'public'
-                                    ? 'border-purple-600 bg-purple-50 dark:bg-purple-950/30'
-                                    : 'border-gray-200 dark:border-gray-700'
-                            }`}>
+                            <label
+                                className={`cursor-pointer rounded-xl border p-4 transition ${
+                                    data.visibility === 'public'
+                                        ? 'border-purple-600 bg-purple-50 dark:bg-purple-950/30'
+                                        : 'border-gray-200 dark:border-gray-700'
+                                }`}
+                            >
                                 <input
                                     type="radio"
                                     name="visibility"
@@ -207,11 +206,13 @@ export default function EditCommunity({ community, categories }: Props) {
                                 </span>
                             </label>
 
-                            <label className={`cursor-pointer rounded-xl border p-4 transition ${
-                                data.visibility === 'private'
-                                    ? 'border-purple-600 bg-purple-50 dark:bg-purple-950/30'
-                                    : 'border-gray-200 dark:border-gray-700'
-                            }`}>
+                            <label
+                                className={`cursor-pointer rounded-xl border p-4 transition ${
+                                    data.visibility === 'private'
+                                        ? 'border-purple-600 bg-purple-50 dark:bg-purple-950/30'
+                                        : 'border-gray-200 dark:border-gray-700'
+                                }`}
+                            >
                                 <input
                                     type="radio"
                                     name="visibility"
@@ -253,7 +254,7 @@ export default function EditCommunity({ community, categories }: Props) {
                                     type="button"
                                     onClick={removeCover}
                                     aria-label="Remove community cover"
-                                    className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-lg bg-black/70 px-3 py-2 text-xs font-semibold text-white transition hover:bg-black"
+                                    className="absolute top-3 right-3 inline-flex items-center gap-1 rounded-lg bg-black/70 px-3 py-2 text-xs font-semibold text-white transition hover:bg-black"
                                 >
                                     <X size={14} />
                                     Remove
@@ -301,7 +302,7 @@ export default function EditCommunity({ community, categories }: Props) {
                         )}
                     </div>
 
-                    <div className="flex flex-col-reverse gap-3 border-t border-gray-100 pt-5 dark:border-gray-800 sm:flex-row sm:justify-end">
+                    <div className="flex flex-col-reverse gap-3 border-t border-gray-100 pt-5 sm:flex-row sm:justify-end dark:border-gray-800">
                         <Link
                             href="/my-communities"
                             className="rounded-xl border border-gray-300 px-5 py-3 text-center text-sm font-semibold text-gray-700 transition hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-800"

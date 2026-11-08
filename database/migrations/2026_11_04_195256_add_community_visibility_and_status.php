@@ -31,10 +31,10 @@ return new class extends Migration
         });
 
         // Normalize existing community names before adding uniqueness.
-        DB::statement("
+        DB::statement('
             UPDATE communities
             SET normalized_name = LOWER(TRIM(name))
-        ");
+        ');
 
         Schema::table('communities', function (Blueprint $table) {
             $table->unique(

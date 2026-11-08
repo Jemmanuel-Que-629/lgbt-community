@@ -4,10 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Comment;
 use App\Models\Post;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Collection;
 
 class PostInteractionController extends Controller
 {
@@ -70,7 +71,7 @@ class PostInteractionController extends Controller
 
         $replies = collect();
 
-        if (!empty($commentIds)) {
+        if (! empty($commentIds)) {
             $replies = $this->getAllReplies($commentIds);
         }
 
@@ -159,12 +160,12 @@ class PostInteractionController extends Controller
             ]);
         }
 
-        if (!empty($validated['parent_id'])) {
+        if (! empty($validated['parent_id'])) {
             $parentComment = $post->comments()
                 ->whereKey($validated['parent_id'])
                 ->exists();
 
-            if (!$parentComment) {
+            if (! $parentComment) {
                 return back()->withErrors([
                     'parent_id' => 'The selected parent comment does not belong to this post.',
                 ]);
@@ -235,13 +236,18 @@ class PostInteractionController extends Controller
 
     /**
      * Retrieve all nested replies for the supplied parent comment IDs.
+     *
+     * @param  array<int, int>  $parentIds
+     * @return Collection<int, Comment>
      */
-    private function getAllReplies(array $parentIds)
+    private function getAllReplies(array $parentIds): Collection
     {
+        /** @var Collection<int, Comment> $allReplies */
         $allReplies = collect();
+
         $currentParentIds = $parentIds;
 
-        while (!empty($currentParentIds)) {
+        while (! empty($currentParentIds)) {
             $replies = Comment::query()
                 ->whereIn('parent_id', $currentParentIds)
                 ->with('user:id,username')
@@ -277,11 +283,11 @@ class PostInteractionController extends Controller
 
         $allowed = $post->community()
             ->where('status', 'active')
-            ->where(function ($query) use ($userId) {
+            ->where(function (Builder $query) use ($userId) {
                 $query->where('visibility', 'public')
-                    ->orWhere(function ($query) use ($userId) {
+                    ->orWhere(function (Builder $query) use ($userId) {
                         $query->where('visibility', 'private')
-                            ->whereHas('members', function ($members) use ($userId) {
+                            ->whereHas('members', function (Builder $members) use ($userId) {
                                 $members->where('users.id', $userId);
                             });
                     });

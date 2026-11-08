@@ -109,7 +109,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Saved Posts
     Route::get('/saved-posts', [SavedPostController::class, 'index'])
-    ->name('saved-posts.index');
+        ->name('saved-posts.index');
 
     Route::get('/posts/{post}/saved-post-data', [SavedPostController::class, 'collectionData'])
         ->name('posts.saved-data');

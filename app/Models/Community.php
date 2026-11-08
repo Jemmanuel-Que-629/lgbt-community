@@ -9,6 +9,19 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Str;
 
+/**
+ * @property bool $is_owner
+ * @property bool $is_member
+ * @property string|null $join_request_status
+ * @property int $pending_join_requests_count
+ * @property array<int, array{
+ *     id: int,
+ *     user_id: int,
+ *     username: string,
+ *     created_at: string|null
+ * }> $pending_join_requests
+ * @property string|null $image_url
+ */
 class Community extends Model
 {
     protected $fillable = [
@@ -34,11 +47,9 @@ class Community extends Model
         });
 
         static::created(function (Community $community): void {
-            if ($community->user_id !== null) {
-                $community->members()->syncWithoutDetaching([
-                    $community->user_id,
-                ]);
-            }
+            $community->members()->syncWithoutDetaching([
+                $community->user_id,
+            ]);
         });
     }
 

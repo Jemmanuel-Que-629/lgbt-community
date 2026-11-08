@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import type { FormEvent } from 'react';
 
@@ -120,7 +119,7 @@ export default function CommentThread({
                         </div>
                     </form>
                 ) : (
-                    <p className="mt-1 break-words whitespace-pre-wrap text-sm text-gray-700 dark:text-gray-300">
+                    <p className="mt-1 text-sm break-words whitespace-pre-wrap text-gray-700 dark:text-gray-300">
                         {comment.body}
                     </p>
                 )}

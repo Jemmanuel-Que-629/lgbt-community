@@ -24,14 +24,15 @@ void createInertiaApp({
     },
     strictMode: true,
     withApp(app) {
-    return (
+        return (
             <TooltipProvider delayDuration={0}>
                 {app}
                 <Toaster
                     position="top-right"
                     toastOptions={{
                         classNames: {
-                            success: '!bg-green-600 !text-white !border-green-700',
+                            success:
+                                '!bg-green-600 !text-white !border-green-700',
                         },
                     }}
                 />

@@ -1,4 +1,3 @@
-
 import { Head, Link, useForm } from '@inertiajs/react';
 import {
     ArrowLeft,
@@ -74,7 +73,7 @@ export default function CreateCommunity({
                         Back to communities
                     </Link>
 
-                    <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900 sm:p-8">
+                    <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8 dark:border-gray-800 dark:bg-gray-900">
                         <div className="mb-6">
                             <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300">
                                 <Users className="h-6 w-6" />
@@ -85,8 +84,8 @@ export default function CreateCommunity({
                             </h1>
 
                             <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                                Build a space where people can connect and
-                                share their interests.
+                                Build a space where people can connect and share
+                                their interests.
                             </p>
                         </div>
 
@@ -176,10 +175,7 @@ export default function CreateCommunity({
                                     className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 outline-none focus:border-purple-600 focus:ring-2 focus:ring-purple-200 dark:border-gray-700 dark:bg-gray-950 dark:text-white"
                                 >
                                     {categories.map((category) => (
-                                        <option
-                                            key={category}
-                                            value={category}
-                                        >
+                                        <option key={category} value={category}>
                                             {category}
                                         </option>
                                     ))}
@@ -261,7 +257,8 @@ export default function CreateCommunity({
                                                 name="visibility"
                                                 value="private"
                                                 checked={
-                                                    data.visibility === 'private'
+                                                    data.visibility ===
+                                                    'private'
                                                 }
                                                 onChange={() =>
                                                     setData(
@@ -283,10 +280,10 @@ export default function CreateCommunity({
 
                                                 <p className="mt-2 text-xs leading-5 text-gray-600 dark:text-gray-400">
                                                     Anyone can discover your
-                                                    community, but only
-                                                    approved members can view
-                                                    posts. Joining requires
-                                                    owner approval.
+                                                    community, but only approved
+                                                    members can view posts.
+                                                    Joining requires owner
+                                                    approval.
                                                 </p>
                                             </div>
                                         </label>
@@ -321,7 +318,7 @@ export default function CreateCommunity({
                                             type="button"
                                             onClick={removeImage}
                                             aria-label="Remove selected image"
-                                            className="absolute right-3 top-3 rounded-full bg-black/60 p-2 text-white hover:bg-black/80"
+                                            className="absolute top-3 right-3 rounded-full bg-black/60 p-2 text-white hover:bg-black/80"
                                         >
                                             <X className="h-4 w-4" />
                                         </button>
@@ -359,7 +356,7 @@ export default function CreateCommunity({
                             </div>
 
                             {/* Form actions */}
-                            <div className="flex flex-col-reverse gap-3 border-t border-gray-100 pt-6 dark:border-gray-800 sm:flex-row sm:justify-end">
+                            <div className="flex flex-col-reverse gap-3 border-t border-gray-100 pt-6 sm:flex-row sm:justify-end dark:border-gray-800">
                                 <Link
                                     href="/communities"
                                     className="rounded-xl border border-gray-300 px-5 py-3 text-center text-sm font-semibold text-gray-700 transition hover:bg-gray-100 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800"

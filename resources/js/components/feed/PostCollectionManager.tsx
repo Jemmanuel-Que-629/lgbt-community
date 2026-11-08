@@ -1,4 +1,3 @@
-
 import { router } from '@inertiajs/react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { FormEvent, KeyboardEvent } from 'react';
@@ -98,9 +97,7 @@ export default function PostCollectionManager({
                 }
 
                 if (!signal?.aborted) {
-                    setError(
-                        'Could not load collections. Please try again.',
-                    );
+                    setError('Could not load collections. Please try again.');
                 }
             } finally {
                 if (!signal?.aborted) {
@@ -165,12 +162,7 @@ export default function PostCollectionManager({
 
         const name = collectionName.trim();
 
-        if (
-            !name ||
-            creating ||
-            !isSaved ||
-            !data?.saved_post_id
-        ) {
+        if (!name || creating || !isSaved || !data?.saved_post_id) {
             return;
         }
 
@@ -218,16 +210,11 @@ export default function PostCollectionManager({
     }
 
     function toggleCollection(collectionId: number) {
-        if (
-            !data?.saved_post_id ||
-            busyCollectionId !== null ||
-            !isSaved
-        ) {
+        if (!data?.saved_post_id || busyCollectionId !== null || !isSaved) {
             return;
         }
 
-        const isAssigned =
-            data.assigned_collection_ids.includes(collectionId);
+        const isAssigned = data.assigned_collection_ids.includes(collectionId);
 
         setBusyCollectionId(collectionId);
         setFeedback('');
@@ -242,9 +229,7 @@ export default function PostCollectionManager({
                 setData((current) => {
                     if (!current) return current;
 
-                    const assigned = new Set(
-                        current.assigned_collection_ids,
-                    );
+                    const assigned = new Set(current.assigned_collection_ids);
 
                     if (isAssigned) {
                         assigned.delete(collectionId);
@@ -266,9 +251,7 @@ export default function PostCollectionManager({
             },
 
             onError: () => {
-                setError(
-                    'Could not update this collection. Please try again.',
-                );
+                setError('Could not update this collection. Please try again.');
             },
 
             onFinish: () => {
@@ -352,16 +335,10 @@ export default function PostCollectionManager({
         const firstElement = focusableElements[0];
         const lastElement = focusableElements[focusableElements.length - 1];
 
-        if (
-            event.shiftKey &&
-            document.activeElement === firstElement
-        ) {
+        if (event.shiftKey && document.activeElement === firstElement) {
             event.preventDefault();
             lastElement.focus();
-        } else if (
-            !event.shiftKey &&
-            document.activeElement === lastElement
-        ) {
+        } else if (!event.shiftKey && document.activeElement === lastElement) {
             event.preventDefault();
             firstElement.focus();
         }
@@ -464,7 +441,7 @@ export default function PostCollectionManager({
                                             maxLength={60}
                                             placeholder="e.g. Helpful resources"
                                             disabled={creating}
-                                            className="min-w-0 flex-1 rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 outline-none transition focus:border-purple-600 focus:ring-2 focus:ring-purple-200 disabled:opacity-60 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+                                            className="min-w-0 flex-1 rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 transition outline-none focus:border-purple-600 focus:ring-2 focus:ring-purple-200 disabled:opacity-60 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
                                         />
 
                                         <button
@@ -497,8 +474,8 @@ export default function PostCollectionManager({
 
                                         <span className="min-w-0">
                                             <span className="block text-sm font-semibold text-gray-900 dark:text-white">
-                                                Automatically add future
-                                                saved posts
+                                                Automatically add future saved
+                                                posts
                                             </span>
 
                                             <span className="mt-1 block text-xs leading-relaxed text-gray-600 dark:text-gray-400">
@@ -596,7 +573,7 @@ export default function PostCollectionManager({
                                                     </label>
 
                                                     {/* Future post assignment */}
-                                                    <div className="ml-7 mt-3 flex items-center justify-between gap-3 border-t border-gray-200/80 pt-3 dark:border-gray-700">
+                                                    <div className="mt-3 ml-7 flex items-center justify-between gap-3 border-t border-gray-200/80 pt-3 dark:border-gray-700">
                                                         <div className="min-w-0">
                                                             <p className="text-xs font-medium text-gray-700 dark:text-gray-300">
                                                                 Automatically
@@ -645,7 +622,7 @@ export default function PostCollectionManager({
                                                     {updatingDefault && (
                                                         <p
                                                             role="status"
-                                                            className="ml-7 mt-2 text-xs text-gray-500 dark:text-gray-400"
+                                                            className="mt-2 ml-7 text-xs text-gray-500 dark:text-gray-400"
                                                         >
                                                             Updating automatic
                                                             saving...

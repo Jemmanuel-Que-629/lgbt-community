@@ -35,9 +35,7 @@ export default function CreatePostModal({
     const isCommunityLocked = selectedCommunityId !== undefined;
 
     const initialCommunityId =
-        selectedCommunityId?.toString() ??
-        communities[0]?.id.toString() ??
-        '';
+        selectedCommunityId?.toString() ?? communities[0]?.id.toString() ?? '';
 
     const {
         data,
@@ -73,13 +71,7 @@ export default function CreatePostModal({
         } else {
             setData('return_to', 'feed');
         }
-    }, [
-        isOpen,
-        isCommunityLocked,
-        selectedCommunityId,
-        clearErrors,
-        setData,
-    ]);
+    }, [isOpen, isCommunityLocked, selectedCommunityId, clearErrors, setData]);
 
     useEffect(() => {
         const previews = data.media.map((file) => ({
@@ -127,10 +119,7 @@ export default function CreatePostModal({
         const remaining = 5 - data.media.length;
 
         if (remaining > 0) {
-            setData('media', [
-                ...data.media,
-                ...selected.slice(0, remaining),
-            ]);
+            setData('media', [...data.media, ...selected.slice(0, remaining)]);
         }
 
         // Allow selecting the same file again after removing it.
@@ -161,9 +150,7 @@ export default function CreatePostModal({
     if (!isOpen) return null;
 
     const hasAvailableCommunity = isCommunityLocked
-        ? communities.some(
-              (community) => community.id === selectedCommunityId,
-          )
+        ? communities.some((community) => community.id === selectedCommunityId)
         : communities.length > 0;
 
     return (
@@ -212,9 +199,11 @@ export default function CreatePostModal({
 
                         {isCommunityLocked ? (
                             <div className="rounded-lg border border-purple-200 bg-purple-50 px-4 py-3 text-sm font-semibold text-purple-800 dark:border-purple-900 dark:bg-purple-950/40 dark:text-purple-200">
-                                {selectedCommunity?.name ?? 'Selected community'}
+                                {selectedCommunity?.name ??
+                                    'Selected community'}
                                 <p className="mt-1 text-xs font-normal text-purple-700 dark:text-purple-300">
-                                    This post will be published in this community.
+                                    This post will be published in this
+                                    community.
                                 </p>
                             </div>
                         ) : (
@@ -329,8 +318,8 @@ export default function CreatePostModal({
                         />
 
                         <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                            JPG, PNG, WEBP, GIF, MP4, WEBM or MOV. Maximum
-                            20 MB per file.
+                            JPG, PNG, WEBP, GIF, MP4, WEBM or MOV. Maximum 20 MB
+                            per file.
                         </p>
 
                         <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">

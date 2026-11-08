@@ -17,7 +17,6 @@ import {
     Trash2,
     Users,
     X,
-    ArrowRight,
     ArrowUpRight,
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -140,11 +139,7 @@ function CommunityImage({
     );
 }
 
-function VisibilityBadge({
-    visibility,
-}: {
-    visibility: 'public' | 'private';
-}) {
+function VisibilityBadge({ visibility }: { visibility: 'public' | 'private' }) {
     const isPrivate = visibility === 'private';
 
     return (
@@ -271,14 +266,15 @@ export default function MyCommunitiesIndex({
     const [busyAction, setBusyAction] = useState<string | null>(null);
 
     // Edit modal state
-    const [editingCommunity, setEditingCommunity] =
-        useState<Community | null>(null);
+    const [editingCommunity, setEditingCommunity] = useState<Community | null>(
+        null,
+    );
     const [editName, setEditName] = useState('');
     const [editDescription, setEditDescription] = useState('');
     const [editCategory, setEditCategory] = useState('');
-    const [editVisibility, setEditVisibility] = useState<
-        'public' | 'private'
-    >('public');
+    const [editVisibility, setEditVisibility] = useState<'public' | 'private'>(
+        'public',
+    );
     const [editImage, setEditImage] = useState<File | null>(null);
     const [removeExistingImage, setRemoveExistingImage] = useState(false);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -349,7 +345,8 @@ export default function MyCommunitiesIndex({
             '/my-communities',
             {
                 tab,
-                search: tab === 'requests' ? undefined : search.trim() || undefined,
+                search:
+                    tab === 'requests' ? undefined : search.trim() || undefined,
             },
             {
                 preserveState: true,
@@ -564,7 +561,8 @@ export default function MyCommunitiesIndex({
 
         if (editDescription.length > 2000) {
             setEditErrors({
-                description: 'The description must not exceed 2,000 characters.',
+                description:
+                    'The description must not exceed 2,000 characters.',
             });
             return;
         }
@@ -657,7 +655,6 @@ export default function MyCommunitiesIndex({
                             </div>
                         </div>
                     </header>
-                    
 
                     {/* Three tabs */}
                     <div className="overflow-x-auto border-b border-gray-200 dark:border-gray-800">
@@ -678,12 +675,8 @@ export default function MyCommunitiesIndex({
                                         : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200'
                                 }`}
                             >
-                                <Crown
-                                    className="h-4 w-4"
-                                    aria-hidden="true"
-                                />
+                                <Crown className="h-4 w-4" aria-hidden="true" />
                                 Owned
-
                                 <span className="rounded-full bg-gray-200 px-2 py-0.5 text-xs text-gray-700 dark:bg-gray-800 dark:text-gray-300">
                                     {counts.owned}
                                 </span>
@@ -701,12 +694,8 @@ export default function MyCommunitiesIndex({
                                         : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200'
                                 }`}
                             >
-                                <Users
-                                    className="h-4 w-4"
-                                    aria-hidden="true"
-                                />
+                                <Users className="h-4 w-4" aria-hidden="true" />
                                 Joined
-
                                 <span className="rounded-full bg-gray-200 px-2 py-0.5 text-xs text-gray-700 dark:bg-gray-800 dark:text-gray-300">
                                     {counts.joined}
                                 </span>
@@ -724,12 +713,8 @@ export default function MyCommunitiesIndex({
                                         : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200'
                                 }`}
                             >
-                                <Clock
-                                    className="h-4 w-4"
-                                    aria-hidden="true"
-                                />
+                                <Clock className="h-4 w-4" aria-hidden="true" />
                                 Pending Requests
-
                                 <span
                                     className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
                                         counts.pendingRequests > 0
@@ -754,7 +739,7 @@ export default function MyCommunitiesIndex({
                                 <div className="relative min-w-0 flex-1">
                                     <Search
                                         aria-hidden="true"
-                                        className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
+                                        className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400"
                                     />
 
                                     <input
@@ -766,13 +751,15 @@ export default function MyCommunitiesIndex({
                                         maxLength={100}
                                         placeholder="Search your communities..."
                                         aria-label="Search your communities"
-                                        className="h-12 w-full rounded-xl border border-gray-300 bg-white pl-10 pr-4 text-sm text-gray-900 outline-none transition focus:border-purple-600 focus:ring-2 focus:ring-purple-200 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+                                        className="h-12 w-full rounded-xl border border-gray-300 bg-white pr-4 pl-10 text-sm text-gray-900 transition outline-none focus:border-purple-600 focus:ring-2 focus:ring-purple-200 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
                                     />
                                 </div>
 
                                 <button
                                     type="submit"
-                                    disabled={isNavigating || busyAction !== null}
+                                    disabled={
+                                        isNavigating || busyAction !== null
+                                    }
                                     className="inline-flex h-12 shrink-0 items-center justify-center gap-2 rounded-xl bg-purple-700 px-5 text-sm font-semibold text-white transition hover:bg-purple-800 disabled:cursor-not-allowed disabled:opacity-60"
                                 >
                                     {isNavigating ? (
@@ -796,16 +783,16 @@ export default function MyCommunitiesIndex({
                                     {(communities?.total ?? 0) === 1
                                         ? 'community'
                                         : 'communities'}{' '}
-                                    {activeTab === 'owned'
-                                        ? 'owned'
-                                        : 'joined'}
+                                    {activeTab === 'owned' ? 'owned' : 'joined'}
                                 </p>
 
                                 {filters.search && (
                                     <button
                                         type="button"
                                         onClick={clearSearch}
-                                        disabled={isNavigating || busyAction !== null}
+                                        disabled={
+                                            isNavigating || busyAction !== null
+                                        }
                                         className="text-sm font-medium text-purple-700 hover:underline disabled:opacity-50 dark:text-purple-400"
                                     >
                                         Clear search
@@ -841,7 +828,7 @@ export default function MyCommunitiesIndex({
                                                 <div className="flex flex-1 flex-col p-5">
                                                     <div className="flex items-start justify-between gap-3">
                                                         <div className="min-w-0">
-                                                            <h2 className="break-words font-semibold text-gray-900 dark:text-white">
+                                                            <h2 className="font-semibold break-words text-gray-900 dark:text-white">
                                                                 {community.name}
                                                             </h2>
 
@@ -870,7 +857,7 @@ export default function MyCommunitiesIndex({
                                                         </div>
                                                     </div>
 
-                                                    <p className="mt-4 flex-1 break-words whitespace-pre-wrap text-sm leading-6 text-gray-600 dark:text-gray-300">
+                                                    <p className="mt-4 flex-1 text-sm leading-6 break-words whitespace-pre-wrap text-gray-600 dark:text-gray-300">
                                                         {community.description?.trim() ||
                                                             'No description has been added yet.'}
                                                     </p>
@@ -890,7 +877,9 @@ export default function MyCommunitiesIndex({
                                                         />
 
                                                         <span>
-                                                            {community.members_count}{' '}
+                                                            {
+                                                                community.members_count
+                                                            }{' '}
                                                             {community.members_count ===
                                                             1
                                                                 ? 'member'
@@ -907,7 +896,8 @@ export default function MyCommunitiesIndex({
                                                                         className="h-4 w-4"
                                                                         aria-hidden="true"
                                                                     />
-                                                                    Community Owner
+                                                                    Community
+                                                                    Owner
                                                                 </div>
 
                                                                 <div className="grid grid-cols-2 gap-2">
@@ -1030,7 +1020,10 @@ export default function MyCommunitiesIndex({
                                             <button
                                                 type="button"
                                                 onClick={clearSearch}
-                                                disabled={isNavigating || busyAction !== null}
+                                                disabled={
+                                                    isNavigating ||
+                                                    busyAction !== null
+                                                }
                                                 className="inline-flex items-center gap-2 rounded-xl bg-purple-700 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-purple-800 disabled:opacity-60"
                                             >
                                                 <X
@@ -1059,7 +1052,9 @@ export default function MyCommunitiesIndex({
                                 <Pagination
                                     links={communities.links}
                                     onNavigate={navigateToPage}
-                                    disabled={isNavigating || busyAction !== null}
+                                    disabled={
+                                        isNavigating || busyAction !== null
+                                    }
                                 />
                             )}
                         </>
@@ -1108,7 +1103,7 @@ export default function MyCommunitiesIndex({
                                         return (
                                             <article
                                                 key={request.id}
-                                                className="flex flex-col gap-4 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-gray-900 sm:flex-row sm:items-center sm:justify-between"
+                                                className="flex flex-col gap-4 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between dark:border-gray-800 dark:bg-gray-900"
                                             >
                                                 <div className="flex min-w-0 items-center gap-3">
                                                     <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300">
@@ -1119,12 +1114,14 @@ export default function MyCommunitiesIndex({
                                                     </div>
 
                                                     <div className="min-w-0">
-                                                        <p className="break-words text-sm font-semibold text-gray-900 dark:text-white">
+                                                        <p className="text-sm font-semibold break-words text-gray-900 dark:text-white">
                                                             @
-                                                            {request.requester_username}
+                                                            {
+                                                                request.requester_username
+                                                            }
                                                         </p>
 
-                                                        <p className="mt-1 break-words text-xs text-gray-500 dark:text-gray-400">
+                                                        <p className="mt-1 text-xs break-words text-gray-500 dark:text-gray-400">
                                                             Wants to join{' '}
                                                             <span className="font-semibold text-gray-700 dark:text-gray-300">
                                                                 {community?.name ??
@@ -1187,7 +1184,7 @@ export default function MyCommunitiesIndex({
                                                                 null ||
                                                             !community
                                                         }
-                                                        className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800 sm:flex-none"
+                                                        className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-60 sm:flex-none dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800"
                                                     >
                                                         {isRejecting ? (
                                                             <LoaderCircle
@@ -1228,7 +1225,9 @@ export default function MyCommunitiesIndex({
                                     <Pagination
                                         links={pendingRequests.links}
                                         onNavigate={navigateToPage}
-                                        disabled={isNavigating || busyAction !== null}
+                                        disabled={
+                                            isNavigating || busyAction !== null
+                                        }
                                     />
                                 )}
                         </section>
@@ -1252,7 +1251,7 @@ export default function MyCommunitiesIndex({
                         aria-labelledby="edit-community-title"
                         className="my-auto w-full max-w-xl overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl dark:border-gray-800 dark:bg-gray-900"
                     >
-                        <div className="flex items-center justify-between border-b border-gray-200 px-5 py-4 dark:border-gray-800 sm:px-6">
+                        <div className="flex items-center justify-between border-b border-gray-200 px-5 py-4 sm:px-6 dark:border-gray-800">
                             <div>
                                 <h2
                                     id="edit-community-title"
@@ -1299,7 +1298,7 @@ export default function MyCommunitiesIndex({
                                         maxLength={100}
                                         required
                                         disabled={isSaving}
-                                        className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition focus:border-purple-600 focus:ring-2 focus:ring-purple-200 disabled:opacity-60 dark:border-gray-700 dark:bg-gray-950 dark:text-white"
+                                        className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 transition outline-none focus:border-purple-600 focus:ring-2 focus:ring-purple-200 disabled:opacity-60 dark:border-gray-700 dark:bg-gray-950 dark:text-white"
                                     />
 
                                     <FieldError message={editErrors.name} />
@@ -1325,7 +1324,7 @@ export default function MyCommunitiesIndex({
                                         rows={4}
                                         disabled={isSaving}
                                         placeholder="What is this community about?"
-                                        className="w-full resize-y rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition focus:border-purple-600 focus:ring-2 focus:ring-purple-200 disabled:opacity-60 dark:border-gray-700 dark:bg-gray-950 dark:text-white"
+                                        className="w-full resize-y rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 transition outline-none focus:border-purple-600 focus:ring-2 focus:ring-purple-200 disabled:opacity-60 dark:border-gray-700 dark:bg-gray-950 dark:text-white"
                                     />
 
                                     <div className="mt-1 flex items-center justify-between gap-2">
@@ -1357,7 +1356,7 @@ export default function MyCommunitiesIndex({
                                         maxLength={50}
                                         disabled={isSaving}
                                         placeholder="e.g. Support, Art, Gaming"
-                                        className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition focus:border-purple-600 focus:ring-2 focus:ring-purple-200 disabled:opacity-60 dark:border-gray-700 dark:bg-gray-950 dark:text-white"
+                                        className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 transition outline-none focus:border-purple-600 focus:ring-2 focus:ring-purple-200 disabled:opacity-60 dark:border-gray-700 dark:bg-gray-950 dark:text-white"
                                     />
 
                                     <FieldError message={editErrors.category} />
@@ -1382,7 +1381,7 @@ export default function MyCommunitiesIndex({
                                             )
                                         }
                                         disabled={isSaving}
-                                        className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition focus:border-purple-600 focus:ring-2 focus:ring-purple-200 disabled:opacity-60 dark:border-gray-700 dark:bg-gray-950 dark:text-white"
+                                        className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 transition outline-none focus:border-purple-600 focus:ring-2 focus:ring-purple-200 disabled:opacity-60 dark:border-gray-700 dark:bg-gray-950 dark:text-white"
                                     >
                                         <option value="public">
                                             Public — Anyone can discover this
@@ -1421,7 +1420,7 @@ export default function MyCommunitiesIndex({
                                                     );
                                                 }}
                                                 disabled={isSaving}
-                                                className="absolute right-2 top-2 inline-flex items-center gap-1.5 rounded-lg bg-black/70 px-3 py-2 text-xs font-semibold text-white transition hover:bg-red-700 disabled:opacity-50"
+                                                className="absolute top-2 right-2 inline-flex items-center gap-1.5 rounded-lg bg-black/70 px-3 py-2 text-xs font-semibold text-white transition hover:bg-red-700 disabled:opacity-50"
                                             >
                                                 <X
                                                     className="h-3.5 w-3.5"
@@ -1456,8 +1455,8 @@ export default function MyCommunitiesIndex({
                                     />
 
                                     <p className="mt-1.5 text-xs text-gray-500 dark:text-gray-400">
-                                        JPG, PNG, or WebP. Maximum file size:
-                                        5 MB.
+                                        JPG, PNG, or WebP. Maximum file size: 5
+                                        MB.
                                     </p>
 
                                     <FieldError message={editErrors.image} />
@@ -1470,7 +1469,7 @@ export default function MyCommunitiesIndex({
                                 )}
                             </div>
 
-                            <div className="flex flex-col-reverse gap-2 border-t border-gray-200 bg-gray-50 px-5 py-4 dark:border-gray-800 dark:bg-gray-950/50 sm:flex-row sm:justify-end sm:px-6">
+                            <div className="flex flex-col-reverse gap-2 border-t border-gray-200 bg-gray-50 px-5 py-4 sm:flex-row sm:justify-end sm:px-6 dark:border-gray-800 dark:bg-gray-950/50">
                                 <button
                                     type="button"
                                     onClick={closeEditModal}
@@ -1510,7 +1509,10 @@ export default function MyCommunitiesIndex({
                 <div
                     className="fixed inset-0 z-[60] flex items-center justify-center overflow-y-auto bg-black/60 p-4 backdrop-blur-sm"
                     onMouseDown={(event) => {
-                        if (event.target === event.currentTarget && !isDeleting) {
+                        if (
+                            event.target === event.currentTarget &&
+                            !isDeleting
+                        ) {
                             setDeletingCommunity(null);
                         }
                     }}
@@ -1540,7 +1542,7 @@ export default function MyCommunitiesIndex({
 
                                 <p
                                     id="delete-community-description"
-                                    className="mt-2 break-words text-sm leading-6 text-gray-600 dark:text-gray-400"
+                                    className="mt-2 text-sm leading-6 break-words text-gray-600 dark:text-gray-400"
                                 >
                                     You are about to permanently delete{' '}
                                     <strong className="text-gray-900 dark:text-white">
@@ -1556,16 +1558,15 @@ export default function MyCommunitiesIndex({
                                 </p>
 
                                 <p className="mt-1 text-xs leading-5 text-red-700 dark:text-red-400">
-                                    The community, its posts, comments,
-                                    replies, reactions, shares, membership
-                                    records, join requests, reports, and
-                                    uploaded media will be permanently
-                                    deleted.
+                                    The community, its posts, comments, replies,
+                                    reactions, shares, membership records, join
+                                    requests, reports, and uploaded media will
+                                    be permanently deleted.
                                 </p>
                             </div>
                         </div>
 
-                        <div className="flex flex-col-reverse gap-2 border-t border-gray-200 bg-gray-50 px-5 py-4 dark:border-gray-800 dark:bg-gray-950/50 sm:flex-row sm:justify-end sm:px-6">
+                        <div className="flex flex-col-reverse gap-2 border-t border-gray-200 bg-gray-50 px-5 py-4 sm:flex-row sm:justify-end sm:px-6 dark:border-gray-800 dark:bg-gray-950/50">
                             <button
                                 type="button"
                                 onClick={() => setDeletingCommunity(null)}

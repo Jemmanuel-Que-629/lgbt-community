@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Community;
 use App\Models\Post;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -16,23 +19,21 @@ class FeedController extends Controller
      */
     private function postsQuery(Request $request): Builder
     {
+        /** @var User $user */
         $user = $request->user();
 
         return Post::query()
-            ->whereHas('community', function ($query) use ($user) {
+            ->whereHas('community', function (Builder $query) use ($user) {
                 $query->where('status', 'active')
-                    ->where(function ($query) use ($user) {
+                    ->where(function (Builder $query) use ($user) {
                         // Public communities are visible to everyone.
                         $query->where('visibility', 'public')
 
                             // Private communities require approved membership.
-                            ->orWhere(function ($query) use ($user) {
+                            ->orWhere(function (Builder $query) use ($user) {
                                 $query->where('visibility', 'private')
-                                    ->whereHas('members', function ($members) use ($user) {
-                                        $members->where(
-                                            'users.id',
-                                            $user->id
-                                        );
+                                    ->whereHas('members', function (Builder $members) use ($user) {
+                                        $members->where('users.id', $user->id);
                                     });
                             });
                     });
@@ -68,11 +69,15 @@ class FeedController extends Controller
 
     /**
      * Get communities where the current user can create posts.
+     *
+     * @return EloquentCollection<int, Community>
      */
-    private function availableCommunities(Request $request)
+    private function availableCommunities(Request $request): EloquentCollection
     {
-        return $request->user()
-            ->joinedCommunities()
+        /** @var User $user */
+        $user = $request->user();
+
+        return $user->joinedCommunities()
             ->where('communities.status', 'active')
             ->orderBy('communities.name')
             ->get([

@@ -295,7 +295,7 @@ class CommunityManagementController extends Controller
                             $postQuery
                                 ->where(
                                     'reportable_type',
-                                    (new Post())->getMorphClass()
+                                    (new Post)->getMorphClass()
                                 )
                                 ->whereIn('reportable_id', $postIds);
                         });
@@ -308,7 +308,7 @@ class CommunityManagementController extends Controller
                             $commentQuery
                                 ->where(
                                     'reportable_type',
-                                    (new Comment())->getMorphClass()
+                                    (new Comment)->getMorphClass()
                                 )
                                 ->whereIn(
                                     'reportable_id',
@@ -367,6 +367,8 @@ class CommunityManagementController extends Controller
      *
      * Storage cleanup failures are logged instead of turning an
      * already-committed database operation into a misleading failure.
+     *
+     * @param  array<int, string|false|null>  $paths
      */
     private function deleteStoredFiles(array $paths): void
     {

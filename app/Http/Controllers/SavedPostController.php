@@ -23,7 +23,7 @@ class SavedPostController extends Controller
     {
         $user = $request->user();
 
-        abort_unless($user, 401);
+        abort_unless($user !== null, 401);
 
         $collectionId = $request->query('collection');
         $selectedCollection = null;
@@ -126,7 +126,7 @@ class SavedPostController extends Controller
     {
         $user = $request->user();
 
-        abort_unless($user, 401);
+        abort_unless($user !== null, 401);
 
         $this->ensureCanAccessPost((int) $user->id, $post);
 
@@ -158,7 +158,7 @@ class SavedPostController extends Controller
     {
         $user = $request->user();
 
-        abort_unless($user, 401);
+        abort_unless($user !== null, 401);
 
         $this->ensureCanAccessPost((int) $user->id, $post);
 
@@ -193,7 +193,7 @@ class SavedPostController extends Controller
     {
         $user = $request->user();
 
-        abort_unless($user, 401);
+        abort_unless($user !== null, 401);
 
         // Allow users to remove stale saves even if they lost access
         // to the original private community.
@@ -214,7 +214,7 @@ class SavedPostController extends Controller
     {
         $user = $request->user();
 
-        abort_unless($user, 401);
+        abort_unless($user !== null, 401);
 
         $request->merge([
             'name' => trim((string) $request->input('name')),
@@ -279,7 +279,7 @@ class SavedPostController extends Controller
     ): RedirectResponse {
         $user = $request->user();
 
-        abort_unless($user, 401);
+        abort_unless($user !== null, 401);
         $this->ensureOwnsCollection((int) $user->id, $collection);
 
         $request->merge([
@@ -316,7 +316,7 @@ class SavedPostController extends Controller
     ): RedirectResponse {
         $user = $request->user();
 
-        abort_unless($user, 401);
+        abort_unless($user !== null, 401);
         $this->ensureOwnsCollection((int) $user->id, $collection);
 
         $validated = $request->validate([
@@ -347,7 +347,7 @@ class SavedPostController extends Controller
     ): RedirectResponse {
         $user = $request->user();
 
-        abort_unless($user, 401);
+        abort_unless($user !== null, 401);
         $this->ensureOwnsCollection((int) $user->id, $collection);
 
         $collection->delete();
@@ -365,7 +365,7 @@ class SavedPostController extends Controller
     ): RedirectResponse {
         $user = $request->user();
 
-        abort_unless($user, 401);
+        abort_unless($user !== null, 401);
 
         $this->ensureOwnsCollection((int) $user->id, $collection);
 
@@ -393,7 +393,7 @@ class SavedPostController extends Controller
     ): RedirectResponse {
         $user = $request->user();
 
-        abort_unless($user, 401);
+        abort_unless($user !== null, 401);
 
         $this->ensureOwnsCollection((int) $user->id, $collection);
 

@@ -1,4 +1,3 @@
-
 import { router } from '@inertiajs/react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { FormEvent, UIEvent } from 'react';
@@ -125,9 +124,7 @@ export default function PostActions({ post }: PostActionsProps) {
                 });
 
                 setCommentsPage(result.current_page);
-                setHasMoreComments(
-                    result.current_page < result.last_page,
-                );
+                setHasMoreComments(result.current_page < result.last_page);
                 setTotalComments(result.total);
                 setFeedback('');
             } catch {
@@ -280,12 +277,7 @@ export default function PostActions({ post }: PostActionsProps) {
             element.scrollTop + element.clientHeight >=
             element.scrollHeight - 80;
 
-        if (
-            nearBottom &&
-            hasMoreComments &&
-            !commentsLoading &&
-            !loadingMore
-        ) {
+        if (nearBottom && hasMoreComments && !commentsLoading && !loadingMore) {
             void loadComments(commentsPage + 1, true);
         }
     }
@@ -384,9 +376,7 @@ export default function PostActions({ post }: PostActionsProps) {
                     disabled={savingPost}
                     aria-pressed={isSaved}
                     aria-label={
-                        isSaved
-                            ? 'Remove from saved posts'
-                            : 'Save post'
+                        isSaved ? 'Remove from saved posts' : 'Save post'
                     }
                     className={`${actionClass} ${
                         isSaved
@@ -399,11 +389,7 @@ export default function PostActions({ post }: PostActionsProps) {
                     </span>
 
                     <span>
-                        {savingPost
-                            ? 'Saving...'
-                            : isSaved
-                              ? 'Saved'
-                              : 'Save'}
+                        {savingPost ? 'Saving...' : isSaved ? 'Saved' : 'Save'}
                     </span>
                 </button>
 
@@ -436,10 +422,7 @@ export default function PostActions({ post }: PostActionsProps) {
                                 }}
                                 className="flex w-full items-start gap-3 rounded-lg px-3 py-3 text-left transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50 dark:hover:bg-gray-800"
                             >
-                                <span
-                                    aria-hidden="true"
-                                    className="text-lg"
-                                >
+                                <span aria-hidden="true" className="text-lg">
                                     📁
                                 </span>
 
@@ -476,8 +459,8 @@ export default function PostActions({ post }: PostActionsProps) {
                     </p>
 
                     <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                        Copy a link to the community page where this post
-                        was published.
+                        Copy a link to the community page where this post was
+                        published.
                     </p>
 
                     <button

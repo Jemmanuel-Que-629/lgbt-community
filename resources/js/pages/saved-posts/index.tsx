@@ -2,10 +2,7 @@ import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 
 import PostCard from '@/components/feed/PostCard';
-import type {
-    SavedPostCollection,
-    SavedPostsProps,
-} from '@/types/feed';
+import type { SavedPostCollection, SavedPostsProps } from '@/types/feed';
 
 type FlashProps = {
     flash?: {
@@ -106,19 +103,20 @@ export default function SavedPosts({
 
         if (!confirmed) return;
 
-        router.delete(
-            `/saved-post-collections/${collection.id}`,
-            {
-                preserveScroll: true,
-                onSuccess: () => {
-                    if (active_collection === collection.id) {
-                        router.get('/saved-posts', {}, {
+        router.delete(`/saved-post-collections/${collection.id}`, {
+            preserveScroll: true,
+            onSuccess: () => {
+                if (active_collection === collection.id) {
+                    router.get(
+                        '/saved-posts',
+                        {},
+                        {
                             preserveScroll: true,
-                        });
-                    }
-                },
+                        },
+                    );
+                }
             },
-        );
+        });
     }
 
     return (
@@ -233,7 +231,7 @@ export default function SavedPosts({
                                                     {collection.name}
                                                 </button>
 
-                                                <div className="flex shrink-0 pr-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
+                                                <div className="flex shrink-0 pr-1 opacity-100 sm:opacity-0 sm:group-focus-within:opacity-100 sm:group-hover:opacity-100">
                                                     <button
                                                         type="button"
                                                         onClick={() =>
@@ -322,11 +320,11 @@ export default function SavedPosts({
                                 <h2 className="text-xl font-bold text-gray-900 dark:text-white">
                                     {active_collection === null
                                         ? 'All Saved'
-                                        : collections.find(
+                                        : (collections.find(
                                               (collection) =>
                                                   collection.id ===
                                                   active_collection,
-                                          )?.name ?? 'Collection'}
+                                          )?.name ?? 'Collection')}
                                 </h2>
 
                                 <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
@@ -371,17 +369,13 @@ export default function SavedPosts({
                             ) : (
                                 <div className="space-y-5">
                                     {posts.data.map((post) => (
-                                        <PostCard
-                                            key={post.id}
-                                            post={post}
-                                        />
+                                        <PostCard key={post.id} post={post} />
                                     ))}
                                 </div>
                             )}
 
                             {/* Pagination */}
-                            {(posts.prev_page_url ||
-                                posts.next_page_url) && (
+                            {(posts.prev_page_url || posts.next_page_url) && (
                                 <nav
                                     aria-label="Saved posts pagination"
                                     className="mt-6 flex items-center justify-between gap-3"

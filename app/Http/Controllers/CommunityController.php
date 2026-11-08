@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Community;
 use App\Models\CommunityJoinRequest;
-use App\Models\Post;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -40,7 +39,7 @@ class CommunityController extends Controller
             ->withCount('members')
             ->latest();
 
-        if (!empty($validated['search'])) {
+        if (! empty($validated['search'])) {
             $search = trim($validated['search']);
 
             $query->where(function ($query) use ($search) {
@@ -49,7 +48,7 @@ class CommunityController extends Controller
             });
         }
 
-        if (!empty($validated['category'])) {
+        if (! empty($validated['category'])) {
             $query->where('category', $validated['category']);
         }
 
@@ -78,7 +77,7 @@ class CommunityController extends Controller
 
         $pendingCounts = [];
 
-        if (!empty($ownedIds)) {
+        if (! empty($ownedIds)) {
             $pendingCounts = CommunityJoinRequest::query()
                 ->select('community_id')
                 ->selectRaw('COUNT(*) as aggregate')
@@ -114,7 +113,7 @@ class CommunityController extends Controller
                     return [
                         'id' => (int) $joinRequest->id,
                         'user_id' => (int) $joinRequest->user_id,
-                        'username' => $joinRequest->user?->username ?? 'Unknown user',
+                        'username' => $joinRequest->user->username,
                         'created_at' => $joinRequest->created_at?->toISOString(),
                     ];
                 })
@@ -125,7 +124,6 @@ class CommunityController extends Controller
         $communities->getCollection()->transform(
             function (Community $community) use (
                 $user,
-                $ownedIds,
                 $joinedIds,
                 $userRequestStatuses,
                 $pendingCounts,
@@ -158,7 +156,7 @@ class CommunityController extends Controller
                  * Do not expose private community member previews to
                  * people who are not members or the community owner.
                  */
-                if ($community->visibility === 'private' && !$isMember) {
+                if ($community->visibility === 'private' && ! $isMember) {
                     $community->setRelation('members', collect());
                 }
 
@@ -226,12 +224,12 @@ class CommunityController extends Controller
             // Do not expose the membership count of a private community
             // to users who are not members.
             'members_count' => (
-                $community->visibility === 'private' && !$isMember
+                $community->visibility === 'private' && ! $isMember
             ) ? null : $community->members_count,
 
             'creator' => [
                 'id' => $community->creator?->id,
-                'username' => $community->creator?->username ?? 'Unknown user',
+                'username' => $community->creator->username,
             ],
 
             'is_owner' => $isOwner,
@@ -268,7 +266,7 @@ class CommunityController extends Controller
                     ->where('user_id', $user->id),
             ]);
 
-        if (!$canViewPosts) {
+        if (! $canViewPosts) {
             // Return an empty paginator rather than querying private posts
             // and attempting to hide them in the frontend.
             $postsQuery->whereRaw('1 = 0');
@@ -364,7 +362,7 @@ class CommunityController extends Controller
             ->orderBy('category')
             ->value('category');
 
-        if ($categoryMode === 'existing' && !$existingCategory) {
+        if ($categoryMode === 'existing' && ! $existingCategory) {
             throw ValidationException::withMessages([
                 'category' => 'The selected category no longer exists. Please select another category.',
             ]);
@@ -384,7 +382,7 @@ class CommunityController extends Controller
         if ($request->hasFile('image')) {
             $imagePath = $request->file('image')->store('communities', 'public');
 
-            if (!$imagePath) {
+            if (! $imagePath) {
                 throw ValidationException::withMessages([
                     'image' => 'The community image could not be uploaded. Please try again.',
                 ]);
@@ -408,7 +406,7 @@ class CommunityController extends Controller
                 $slug = $baseSlug;
 
                 while (Community::query()->where('slug', $slug)->exists()) {
-                    $slug = $baseSlug . '-' . Str::lower(Str::random(6));
+                    $slug = $baseSlug.'-'.Str::lower(Str::random(6));
                 }
 
                 Community::create([
@@ -453,7 +451,7 @@ class CommunityController extends Controller
     {
         $user = request()->user();
 
-        $result = DB::transaction(function () use ($community, $user) {
+        $result = DB::transaction(function () use ($community, $user): string {
             $lockedCommunity = Community::query()
                 ->whereKey($community->id)
                 ->lockForUpdate()
@@ -518,6 +516,7 @@ class CommunityController extends Controller
             return 'requested';
         });
 
+        /** @var string $result */
         return match ($result) {
             'unavailable' => back()->with('error', 'This community is no longer available.'),
             'owner' => back()->with('info', 'You are already the owner of this community.'),
@@ -639,7 +638,7 @@ class CommunityController extends Controller
                 ->where('users.id', $user->id)
                 ->exists();
 
-            if (!$isMember) {
+            if (! $isMember) {
                 return 'not_member';
             }
 

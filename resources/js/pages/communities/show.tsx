@@ -1,11 +1,6 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
-import {
-    ArrowLeft,
-    Globe2,
-    LockKeyhole,
-    Users,
-} from 'lucide-react';
+import { ArrowLeft, Globe2, LockKeyhole, Users } from 'lucide-react';
 import { toast } from 'sonner';
 
 import FeedPagination from '@/components/feed/FeedPagination';
@@ -30,8 +25,7 @@ export default function CommunityShow({
     ).flash;
 
     const [isCreateOpen, setIsCreateOpen] = useState(false);
-    const [isMembershipProcessing, setIsMembershipProcessing] =
-        useState(false);
+    const [isMembershipProcessing, setIsMembershipProcessing] = useState(false);
 
     useEffect(() => {
         if (flash?.success) {
@@ -65,13 +59,10 @@ export default function CommunityShow({
 
         setIsMembershipProcessing(true);
 
-        router.delete(
-            `/communities/${community.slug}/leave`,
-            {
-                preserveScroll: true,
-                onFinish: () => setIsMembershipProcessing(false),
-            },
-        );
+        router.delete(`/communities/${community.slug}/leave`, {
+            preserveScroll: true,
+            onFinish: () => setIsMembershipProcessing(false),
+        });
     }
 
     const membershipButtonLabel =
@@ -121,7 +112,7 @@ export default function CommunityShow({
                             <div className="flex flex-wrap items-start justify-between gap-4">
                                 <div className="min-w-0 flex-1">
                                     <div className="flex flex-wrap items-center gap-2">
-                                        <h1 className="break-words text-2xl font-bold text-gray-900 dark:text-white">
+                                        <h1 className="text-2xl font-bold break-words text-gray-900 dark:text-white">
                                             {community.name}
                                         </h1>
 
@@ -149,7 +140,7 @@ export default function CommunityShow({
                                     <button
                                         type="button"
                                         onClick={() => setIsCreateOpen(true)}
-                                        className="shrink-0 rounded-xl bg-purple-700 px-5 py-3 text-sm font-semibold text-white transition hover:bg-purple-800 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
+                                        className="shrink-0 rounded-xl bg-purple-700 px-5 py-3 text-sm font-semibold text-white transition hover:bg-purple-800 focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:outline-none"
                                     >
                                         + Create Post
                                     </button>
@@ -171,7 +162,7 @@ export default function CommunityShow({
                                 ) : null}
                             </div>
 
-                            <p className="mt-5 break-words whitespace-pre-wrap text-sm leading-7 text-gray-600 dark:text-gray-300">
+                            <p className="mt-5 text-sm leading-7 break-words whitespace-pre-wrap text-gray-600 dark:text-gray-300">
                                 {community.description?.trim() ||
                                     'No description has been added yet.'}
                             </p>
@@ -197,12 +188,11 @@ export default function CommunityShow({
                                     </span>
                                 )}
 
-                                {community.is_member &&
-                                    !community.is_owner && (
-                                        <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-800 dark:bg-green-950 dark:text-green-300">
-                                            Member
-                                        </span>
-                                    )}
+                                {community.is_member && !community.is_owner && (
+                                    <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-800 dark:bg-green-950 dark:text-green-300">
+                                        Member
+                                    </span>
+                                )}
                             </div>
 
                             {community.is_member && !community.is_owner && (
@@ -287,9 +277,7 @@ export default function CommunityShow({
                             </div>
                         )}
 
-                        {can_view_posts && (
-                            <FeedPagination posts={posts} />
-                        )}
+                        {can_view_posts && <FeedPagination posts={posts} />}
                     </section>
                 </div>
 

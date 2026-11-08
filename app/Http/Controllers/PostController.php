@@ -63,7 +63,7 @@ class PostController extends Controller
                     ->lockForUpdate()
                     ->first();
 
-                if (!$community || $community->status !== 'active') {
+                if (! $community || $community->status !== 'active') {
                     abort(422, 'This community is no longer available.');
                 }
 
@@ -74,7 +74,7 @@ class PostController extends Controller
                     ->where('users.id', $request->user()->id)
                     ->exists();
 
-                if (!$isMember) {
+                if (! $isMember) {
                     abort(
                         403,
                         'You must be an approved member of this community to publish a post.'

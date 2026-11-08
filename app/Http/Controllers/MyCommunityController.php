@@ -165,7 +165,7 @@ class MyCommunityController extends Controller
 
                     $joinRequest->setAttribute(
                         'requester_username',
-                        $joinRequest->user?->username ?? 'Deleted user'
+                        $joinRequest->user->username
                     );
 
                     return $joinRequest;

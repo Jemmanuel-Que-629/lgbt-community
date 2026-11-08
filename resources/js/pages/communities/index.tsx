@@ -96,9 +96,7 @@ export default function CommunitiesIndex({
 
     const [search, setSearch] = useState(filters?.search ?? '');
     const [category, setCategory] = useState(filters?.category ?? '');
-    const [busyCommunityId, setBusyCommunityId] = useState<number | null>(
-        null,
-    );
+    const [busyCommunityId, setBusyCommunityId] = useState<number | null>(null);
     const [busyRequestId, setBusyRequestId] = useState<number | null>(null);
 
     const [createModalOpen, setCreateModalOpen] = useState(false);
@@ -110,9 +108,8 @@ export default function CommunitiesIndex({
         communityItems.find(
             (community) => community.id === selectedCommunityId,
         ) ?? null;
-    
-    const pendingRequests =
-    selectedCommunity?.pending_join_requests ?? [];
+
+    const pendingRequests = selectedCommunity?.pending_join_requests ?? [];
 
     const createForm = useForm<{
         name: string;
@@ -250,7 +247,10 @@ export default function CommunitiesIndex({
     function handleImageChange(event: ChangeEvent<HTMLInputElement>) {
         const file = event.target.files?.[0] ?? null;
 
-        if (file && !['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+        if (
+            file &&
+            !['image/jpeg', 'image/png', 'image/webp'].includes(file.type)
+        ) {
             toast.error('Please select a JPG, PNG, or WEBP image.');
             event.target.value = '';
             return;
@@ -299,11 +299,7 @@ export default function CommunitiesIndex({
         if (community.is_member) {
             router.delete(`/communities/${community.slug}/leave`, options);
         } else {
-            router.post(
-                `/communities/${community.slug}/join`,
-                {},
-                options,
-            );
+            router.post(`/communities/${community.slug}/join`, {}, options);
         }
     }
 
@@ -354,9 +350,7 @@ export default function CommunitiesIndex({
             return 'Request Pending';
         }
 
-        return community.visibility === 'private'
-            ? 'Request to Join'
-            : 'Join';
+        return community.visibility === 'private' ? 'Request to Join' : 'Join';
     }
 
     return (
@@ -397,7 +391,7 @@ export default function CommunitiesIndex({
                         <div className="relative min-w-0 flex-1">
                             <Search
                                 aria-hidden="true"
-                                className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
+                                className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400"
                             />
 
                             <input
@@ -409,7 +403,7 @@ export default function CommunitiesIndex({
                                 maxLength={100}
                                 placeholder="Search communities..."
                                 aria-label="Search communities"
-                                className="h-12 w-full rounded-xl border border-gray-300 bg-white pl-10 pr-4 text-sm text-gray-900 outline-none focus:border-purple-600 focus:ring-2 focus:ring-purple-200 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+                                className="h-12 w-full rounded-xl border border-gray-300 bg-white pr-4 pl-10 text-sm text-gray-900 outline-none focus:border-purple-600 focus:ring-2 focus:ring-purple-200 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
                             />
                         </div>
 
@@ -463,8 +457,7 @@ export default function CommunitiesIndex({
                     {communityItems.length > 0 ? (
                         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
                             {communityItems.map((community) => {
-                                const isBusy =
-                                    busyCommunityId === community.id;
+                                const isBusy = busyCommunityId === community.id;
 
                                 const isPending =
                                     community.join_request_status === 'pending';
@@ -475,8 +468,6 @@ export default function CommunitiesIndex({
                                     isPending;
 
                                 const members = community.members ?? [];
-                                const pendingRequests =
-                                     selectedCommunity?.pending_join_requests ?? [];
 
                                 return (
                                     <article
@@ -510,7 +501,7 @@ export default function CommunitiesIndex({
                                         <div className="flex flex-1 flex-col p-5">
                                             <div className="flex items-start justify-between gap-3">
                                                 <div className="min-w-0">
-                                                    <h2 className="break-words font-semibold text-gray-900 dark:text-white">
+                                                    <h2 className="font-semibold break-words text-gray-900 dark:text-white">
                                                         {community.name}
                                                     </h2>
 
@@ -551,18 +542,18 @@ export default function CommunitiesIndex({
                                                 </div>
                                             </div>
 
-                                            <p className="mt-4 flex-1 break-words whitespace-pre-wrap text-sm leading-6 text-gray-600 dark:text-gray-300">
+                                            <p className="mt-4 flex-1 text-sm leading-6 break-words whitespace-pre-wrap text-gray-600 dark:text-gray-300">
                                                 {community.description?.trim() ||
                                                     'No description has been added yet.'}
                                             </p>
 
-                                         <Link
-                                            href={`/communities/${community.slug}`}
-                                            className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-indigo-600 transition-colors hover:text-indigo-700 hover:underline dark:text-indigo-400"
-                                        >
-                                            View Community
-                                            <ArrowUpRight className="h-4 w-4" />
-                                        </Link>
+                                            <Link
+                                                href={`/communities/${community.slug}`}
+                                                className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-indigo-600 transition-colors hover:text-indigo-700 hover:underline dark:text-indigo-400"
+                                            >
+                                                View Community
+                                                <ArrowUpRight className="h-4 w-4" />
+                                            </Link>
                                             {/* Member previews */}
                                             <div className="mt-4 flex items-center justify-between gap-3">
                                                 <div className="flex min-w-0 items-center">
@@ -588,9 +579,11 @@ export default function CommunitiesIndex({
                                                         ),
                                                     )}
 
-                                                    <span className="ml-2 whitespace-nowrap text-xs text-gray-500 dark:text-gray-400">
+                                                    <span className="ml-2 text-xs whitespace-nowrap text-gray-500 dark:text-gray-400">
                                                         <Users className="mr-1 inline h-3.5 w-3.5" />
-                                                        {community.members_count}{' '}
+                                                        {
+                                                            community.members_count
+                                                        }{' '}
                                                         {community.members_count ===
                                                         1
                                                             ? 'member'
@@ -613,7 +606,6 @@ export default function CommunitiesIndex({
                                                     >
                                                         <Users className="h-4 w-4" />
                                                         Manage Requests
-
                                                         {community.pending_join_requests_count >
                                                             0 && (
                                                             <span className="rounded-full bg-purple-700 px-2 py-0.5 text-xs text-white">
@@ -670,8 +662,8 @@ export default function CommunitiesIndex({
                             </h2>
 
                             <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                                Try another search or category, or check
-                                back later for more communities.
+                                Try another search or category, or check back
+                                later for more communities.
                             </p>
 
                             {(search || category) && (
@@ -739,7 +731,7 @@ export default function CommunitiesIndex({
                         aria-labelledby="create-community-title"
                         className="max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white shadow-2xl dark:bg-gray-900"
                     >
-                        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-gray-200 bg-white px-5 py-4 dark:border-gray-800 dark:bg-gray-900 sm:px-7">
+                        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-gray-200 bg-white px-5 py-4 sm:px-7 dark:border-gray-800 dark:bg-gray-900">
                             <div>
                                 <h2
                                     id="create-community-title"
@@ -853,7 +845,8 @@ export default function CommunitiesIndex({
                                     Category
                                 </label>
 
-                                {createForm.data.category_mode === 'existing' ? (
+                                {createForm.data.category_mode ===
+                                'existing' ? (
                                     <div className="space-y-3">
                                         <button
                                             type="button"
@@ -864,9 +857,11 @@ export default function CommunitiesIndex({
                                                     category_mode: 'new',
                                                 }));
                                                 setCategorySearch('');
-                                                createForm.clearErrors('category');
+                                                createForm.clearErrors(
+                                                    'category',
+                                                );
                                             }}
-                                            className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-purple-400 bg-purple-50 px-4 py-3 text-sm font-semibold text-purple-700 transition hover:border-purple-600 hover:bg-purple-100 focus:outline-none focus:ring-2 focus:ring-purple-300 dark:border-purple-700 dark:bg-purple-950/30 dark:text-purple-300 dark:hover:bg-purple-950/60"
+                                            className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-purple-400 bg-purple-50 px-4 py-3 text-sm font-semibold text-purple-700 transition hover:border-purple-600 hover:bg-purple-100 focus:ring-2 focus:ring-purple-300 focus:outline-none dark:border-purple-700 dark:bg-purple-950/30 dark:text-purple-300 dark:hover:bg-purple-950/60"
                                         >
                                             <Plus className="h-4 w-4" />
                                             Create a new category
@@ -875,7 +870,7 @@ export default function CommunitiesIndex({
                                         <div className="relative">
                                             <Search
                                                 aria-hidden="true"
-                                                className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
+                                                className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400"
                                             />
 
                                             <input
@@ -891,7 +886,7 @@ export default function CommunitiesIndex({
                                                 autoComplete="off"
                                                 aria-label="Search existing categories"
                                                 aria-describedby="community-category-help"
-                                                className="w-full rounded-xl border border-gray-300 bg-white py-3 pl-10 pr-4 text-sm text-gray-900 outline-none transition focus:border-purple-600 focus:ring-2 focus:ring-purple-200 dark:border-gray-700 dark:bg-gray-950 dark:text-white"
+                                                className="w-full rounded-xl border border-gray-300 bg-white py-3 pr-4 pl-10 text-sm text-gray-900 transition outline-none focus:border-purple-600 focus:ring-2 focus:ring-purple-200 dark:border-gray-700 dark:bg-gray-950 dark:text-white"
                                             />
                                         </div>
 
@@ -904,7 +899,8 @@ export default function CommunitiesIndex({
                                                     {filteredCategories.map(
                                                         (item) => {
                                                             const isSelected =
-                                                                createForm.data.category ===
+                                                                createForm.data
+                                                                    .category ===
                                                                 item;
 
                                                             return (
@@ -923,7 +919,7 @@ export default function CommunitiesIndex({
                                                                             'category',
                                                                         );
                                                                     }}
-                                                                    className={`flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2.5 text-left text-sm transition focus:outline-none focus:ring-2 focus:ring-inset focus:ring-purple-500 ${
+                                                                    className={`flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2.5 text-left text-sm transition focus:ring-2 focus:ring-purple-500 focus:outline-none focus:ring-inset ${
                                                                         isSelected
                                                                             ? 'bg-purple-100 font-semibold text-purple-800 dark:bg-purple-950 dark:text-purple-200'
                                                                             : 'text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800'
@@ -983,7 +979,10 @@ export default function CommunitiesIndex({
                                                 <span className="min-w-0 text-green-800 dark:text-green-300">
                                                     Selected:{' '}
                                                     <strong className="break-words">
-                                                        {createForm.data.category}
+                                                        {
+                                                            createForm.data
+                                                                .category
+                                                        }
                                                     </strong>
                                                 </span>
 
@@ -1013,7 +1012,9 @@ export default function CommunitiesIndex({
                                                     'category',
                                                     event.target.value,
                                                 );
-                                                createForm.clearErrors('category');
+                                                createForm.clearErrors(
+                                                    'category',
+                                                );
                                             }}
                                             maxLength={50}
                                             required
@@ -1027,13 +1028,18 @@ export default function CommunitiesIndex({
                                             <button
                                                 type="button"
                                                 onClick={() => {
-                                                    createForm.setData((data) => ({
-                                                        ...data,
-                                                        category: '',
-                                                        category_mode: 'existing',
-                                                    }));
+                                                    createForm.setData(
+                                                        (data) => ({
+                                                            ...data,
+                                                            category: '',
+                                                            category_mode:
+                                                                'existing',
+                                                        }),
+                                                    );
                                                     setCategorySearch('');
-                                                    createForm.clearErrors('category');
+                                                    createForm.clearErrors(
+                                                        'category',
+                                                    );
                                                 }}
                                                 className="text-sm font-semibold text-purple-700 hover:text-purple-800 dark:text-purple-400 dark:hover:text-purple-300"
                                             >
@@ -1041,7 +1047,10 @@ export default function CommunitiesIndex({
                                             </button>
 
                                             <span className="text-xs text-gray-400">
-                                                {createForm.data.category.length}
+                                                {
+                                                    createForm.data.category
+                                                        .length
+                                                }
                                                 /50
                                             </span>
                                         </div>
@@ -1073,7 +1082,8 @@ export default function CommunitiesIndex({
                                 <div className="grid gap-3 sm:grid-cols-2">
                                     <label
                                         className={`flex cursor-pointer gap-3 rounded-xl border p-4 transition ${
-                                            createForm.data.visibility === 'public'
+                                            createForm.data.visibility ===
+                                            'public'
                                                 ? 'border-purple-600 bg-purple-50 ring-1 ring-purple-600 dark:bg-purple-950/30'
                                                 : 'border-gray-200 hover:border-gray-400 dark:border-gray-700'
                                         }`}
@@ -1113,7 +1123,8 @@ export default function CommunitiesIndex({
 
                                     <label
                                         className={`flex cursor-pointer gap-3 rounded-xl border p-4 transition ${
-                                            createForm.data.visibility === 'private'
+                                            createForm.data.visibility ===
+                                            'private'
                                                 ? 'border-purple-600 bg-purple-50 ring-1 ring-purple-600 dark:bg-purple-950/30'
                                                 : 'border-gray-200 hover:border-gray-400 dark:border-gray-700'
                                         }`}
@@ -1145,9 +1156,8 @@ export default function CommunitiesIndex({
                                             </div>
 
                                             <p className="mt-2 text-xs leading-5 text-gray-600 dark:text-gray-400">
-                                                People can discover it, but
-                                                only approved members can
-                                                view posts.
+                                                People can discover it, but only
+                                                approved members can view posts.
                                             </p>
                                         </div>
                                     </label>
@@ -1183,7 +1193,10 @@ export default function CommunitiesIndex({
                                         <button
                                             type="button"
                                             onClick={() => {
-                                                createForm.setData('image', null);
+                                                createForm.setData(
+                                                    'image',
+                                                    null,
+                                                );
 
                                                 const input =
                                                     document.getElementById(
@@ -1195,7 +1208,7 @@ export default function CommunitiesIndex({
                                                 }
                                             }}
                                             aria-label="Remove selected image"
-                                            className="absolute right-3 top-3 rounded-full bg-black/60 p-2 text-white hover:bg-black/80"
+                                            className="absolute top-3 right-3 rounded-full bg-black/60 p-2 text-white hover:bg-black/80"
                                         >
                                             <X className="h-4 w-4" />
                                         </button>
@@ -1233,7 +1246,7 @@ export default function CommunitiesIndex({
                             </div>
 
                             {/* Actions */}
-                            <div className="flex flex-col-reverse gap-3 border-t border-gray-100 pt-5 dark:border-gray-800 sm:flex-row sm:justify-end">
+                            <div className="flex flex-col-reverse gap-3 border-t border-gray-100 pt-5 sm:flex-row sm:justify-end dark:border-gray-800">
                                 <button
                                     type="button"
                                     onClick={closeCreateModal}
@@ -1308,7 +1321,7 @@ export default function CommunitiesIndex({
                                         return (
                                             <div
                                                 key={joinRequest.id}
-                                                className="flex flex-col gap-3 rounded-xl border border-gray-200 p-4 dark:border-gray-800 sm:flex-row sm:items-center sm:justify-between"
+                                                className="flex flex-col gap-3 rounded-xl border border-gray-200 p-4 sm:flex-row sm:items-center sm:justify-between dark:border-gray-800"
                                             >
                                                 <div className="flex min-w-0 items-center gap-3">
                                                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300">

@@ -35,8 +35,8 @@ class CommunityAccessTest extends TestCase
 
         return Community::create([
             'user_id' => $owner->id,
-            'name' => 'Test Community ' . $communityNumber,
-            'slug' => 'test-community-' . $communityNumber,
+            'name' => 'Test Community '.$communityNumber,
+            'slug' => 'test-community-'.$communityNumber,
             'description' => 'Community created for feature testing.',
             'category' => 'General',
             'visibility' => $visibility,
