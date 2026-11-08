@@ -15,6 +15,21 @@ export type CommunityOption = {
     name: string;
 };
 
+export type CommunityDetails = {
+    id: number;
+    name: string;
+    slug: string;
+    description: string | null;
+    category: string | null;
+    visibility: 'public' | 'private';
+    image_url: string | null;
+    members_count: number | null;
+    creator: User;
+    is_owner: boolean;
+    is_member: boolean;
+    join_request_status: 'pending' | 'approved' | 'rejected' | null;
+};
+
 export type PostMedia = {
     id: number;
     type: 'image' | 'video' | 'gif';
@@ -45,6 +60,7 @@ export type Post = {
     title: string;
     body: string | null;
     created_at: string;
+    is_saved: boolean;
     user: User;
     community: Community;
     media: PostMedia[];
@@ -59,6 +75,7 @@ export type PaginatedPosts = {
     data: Post[];
     current_page: number;
     last_page: number;
+    total: number;
     next_page_url: string | null;
     prev_page_url: string | null;
 };
@@ -66,4 +83,24 @@ export type PaginatedPosts = {
 export type FeedProps = {
     posts: PaginatedPosts;
     communities: CommunityOption[];
+};
+
+export type CommunityShowProps = {
+    community: CommunityDetails;
+    posts: PaginatedPosts;
+    can_view_posts: boolean;
+    can_post: boolean;
+    communities: CommunityOption[];
+};
+
+export type SavedPostCollection = {
+    id: number;
+    name: string;
+    is_default: boolean;
+};
+
+export type SavedPostsProps = {
+    posts: PaginatedPosts;
+    collections: SavedPostCollection[];
+    active_collection: number | null;
 };

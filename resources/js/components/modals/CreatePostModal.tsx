@@ -8,6 +8,8 @@ type CreatePostModalProps = {
     isOpen: boolean;
     communities: CommunityOption[];
     onClose: () => void;
+    selectedCommunityId?: number;
+    returnToCommunity?: boolean;
 };
 
 type CreatePostFormData = {
@@ -15,6 +17,7 @@ type CreatePostFormData = {
     title: string;
     body: string;
     media: File[];
+    return_to: 'feed' | 'community';
 };
 
 type MediaPreview = {
@@ -26,7 +29,16 @@ export default function CreatePostModal({
     isOpen,
     communities,
     onClose,
+    selectedCommunityId,
+    returnToCommunity = false,
 }: CreatePostModalProps) {
+    const isCommunityLocked = selectedCommunityId !== undefined;
+
+    const initialCommunityId =
+        selectedCommunityId?.toString() ??
+        communities[0]?.id.toString() ??
+        '';
+
     const {
         data,
         setData,
@@ -36,18 +48,38 @@ export default function CreatePostModal({
         reset,
         clearErrors,
     } = useForm<CreatePostFormData>({
-        community_id: communities[0]?.id.toString() ?? '',
+        community_id: initialCommunityId,
         title: '',
         body: '',
         media: [],
+        return_to: returnToCommunity ? 'community' : 'feed',
     });
 
     const [currentPreview, setCurrentPreview] = useState(0);
     const [mediaPreviews, setMediaPreviews] = useState<MediaPreview[]>([]);
 
+    const selectedCommunity = communities.find(
+        (community) => community.id.toString() === data.community_id,
+    );
+
     useEffect(() => {
-        if (isOpen) clearErrors();
-    }, [isOpen, clearErrors]);
+        if (!isOpen) return;
+
+        clearErrors();
+
+        if (isCommunityLocked) {
+            setData('community_id', selectedCommunityId.toString());
+            setData('return_to', 'community');
+        } else {
+            setData('return_to', 'feed');
+        }
+    }, [
+        isOpen,
+        isCommunityLocked,
+        selectedCommunityId,
+        clearErrors,
+        setData,
+    ]);
 
     useEffect(() => {
         const previews = data.media.map((file) => ({
@@ -56,6 +88,7 @@ export default function CreatePostModal({
         }));
 
         setMediaPreviews(previews);
+
         setCurrentPreview((current) =>
             Math.min(current, Math.max(0, previews.length - 1)),
         );
@@ -71,6 +104,17 @@ export default function CreatePostModal({
         submitPost('/posts', {
             onSuccess: () => {
                 reset();
+
+                // reset() returns to the original form defaults.
+                // Restore the correct community after a successful post.
+                setData({
+                    community_id: initialCommunityId,
+                    title: '',
+                    body: '',
+                    media: [],
+                    return_to: returnToCommunity ? 'community' : 'feed',
+                });
+
                 clearErrors();
                 setCurrentPreview(0);
                 onClose();
@@ -83,10 +127,13 @@ export default function CreatePostModal({
         const remaining = 5 - data.media.length;
 
         if (remaining > 0) {
-            setData('media', [...data.media, ...selected.slice(0, remaining)]);
+            setData('media', [
+                ...data.media,
+                ...selected.slice(0, remaining),
+            ]);
         }
 
-        // Clear the input so selecting the same file again triggers onChange.
+        // Allow selecting the same file again after removing it.
         event.target.value = '';
     }
 
@@ -94,7 +141,9 @@ export default function CreatePostModal({
         const updatedMedia = data.media.filter(
             (_, index) => index !== currentPreview,
         );
+
         setData('media', updatedMedia);
+
         setCurrentPreview((current) =>
             Math.min(current, Math.max(0, updatedMedia.length - 1)),
         );
@@ -102,17 +151,28 @@ export default function CreatePostModal({
 
     function handleClose() {
         if (processing) return;
+
+        // Do not reset the form here. An unfinished draft should survive
+        // closing and reopening the modal.
         onClose();
         setCurrentPreview(0);
     }
 
     if (!isOpen) return null;
 
+    const hasAvailableCommunity = isCommunityLocked
+        ? communities.some(
+              (community) => community.id === selectedCommunityId,
+          )
+        : communities.length > 0;
+
     return (
         <div
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
             onMouseDown={(event) => {
-                if (event.target === event.currentTarget) handleClose();
+                if (event.target === event.currentTarget) {
+                    handleClose();
+                }
             }}
         >
             <section
@@ -128,6 +188,7 @@ export default function CreatePostModal({
                     >
                         Create a Post
                     </h2>
+
                     <button
                         type="button"
                         onClick={handleClose}
@@ -140,6 +201,7 @@ export default function CreatePostModal({
                 </div>
 
                 <form onSubmit={handleCreatePost} className="space-y-5">
+                    {/* Community selection */}
                     <div>
                         <label
                             htmlFor="community_id"
@@ -147,24 +209,40 @@ export default function CreatePostModal({
                         >
                             Community
                         </label>
-                        <select
-                            id="community_id"
-                            value={data.community_id}
-                            onChange={(event) =>
-                                setData('community_id', event.target.value)
-                            }
-                            required
-                            className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 outline-none focus:border-purple-600 focus:ring-2 focus:ring-purple-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
-                        >
-                            <option value="" disabled>
-                                Choose a community
-                            </option>
-                            {communities.map((community) => (
-                                <option key={community.id} value={community.id}>
-                                    {community.name}
+
+                        {isCommunityLocked ? (
+                            <div className="rounded-lg border border-purple-200 bg-purple-50 px-4 py-3 text-sm font-semibold text-purple-800 dark:border-purple-900 dark:bg-purple-950/40 dark:text-purple-200">
+                                {selectedCommunity?.name ?? 'Selected community'}
+                                <p className="mt-1 text-xs font-normal text-purple-700 dark:text-purple-300">
+                                    This post will be published in this community.
+                                </p>
+                            </div>
+                        ) : (
+                            <select
+                                id="community_id"
+                                value={data.community_id}
+                                onChange={(event) =>
+                                    setData('community_id', event.target.value)
+                                }
+                                required
+                                disabled={processing}
+                                className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 outline-none focus:border-purple-600 focus:ring-2 focus:ring-purple-200 disabled:opacity-60 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+                            >
+                                <option value="" disabled>
+                                    Choose a community
                                 </option>
-                            ))}
-                        </select>
+
+                                {communities.map((community) => (
+                                    <option
+                                        key={community.id}
+                                        value={community.id}
+                                    >
+                                        {community.name}
+                                    </option>
+                                ))}
+                            </select>
+                        )}
+
                         {errors.community_id && (
                             <p className="mt-1 text-sm text-red-600">
                                 {errors.community_id}
@@ -172,6 +250,7 @@ export default function CreatePostModal({
                         )}
                     </div>
 
+                    {/* Title */}
                     <div>
                         <label
                             htmlFor="post-title"
@@ -179,6 +258,7 @@ export default function CreatePostModal({
                         >
                             Title
                         </label>
+
                         <input
                             id="post-title"
                             type="text"
@@ -188,9 +268,11 @@ export default function CreatePostModal({
                             }
                             maxLength={255}
                             required
+                            disabled={processing}
                             placeholder="Give your post a title..."
-                            className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 outline-none focus:border-purple-600 focus:ring-2 focus:ring-purple-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+                            className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 outline-none focus:border-purple-600 focus:ring-2 focus:ring-purple-200 disabled:opacity-60 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
                         />
+
                         {errors.title && (
                             <p className="mt-1 text-sm text-red-600">
                                 {errors.title}
@@ -198,6 +280,7 @@ export default function CreatePostModal({
                         )}
                     </div>
 
+                    {/* Body */}
                     <div>
                         <label
                             htmlFor="post-body"
@@ -205,6 +288,7 @@ export default function CreatePostModal({
                         >
                             Body (optional)
                         </label>
+
                         <textarea
                             id="post-body"
                             value={data.body}
@@ -213,9 +297,11 @@ export default function CreatePostModal({
                             }
                             rows={5}
                             maxLength={10000}
+                            disabled={processing}
                             placeholder="What's on your mind?"
-                            className="w-full resize-y rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 outline-none focus:border-purple-600 focus:ring-2 focus:ring-purple-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+                            className="w-full resize-y rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 outline-none focus:border-purple-600 focus:ring-2 focus:ring-purple-200 disabled:opacity-60 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
                         />
+
                         {errors.body && (
                             <p className="mt-1 text-sm text-red-600">
                                 {errors.body}
@@ -223,6 +309,7 @@ export default function CreatePostModal({
                         )}
                     </div>
 
+                    {/* Media */}
                     <div>
                         <label
                             htmlFor="post-media"
@@ -230,6 +317,7 @@ export default function CreatePostModal({
                         >
                             Photos and videos (up to 5)
                         </label>
+
                         <input
                             id="post-media"
                             type="file"
@@ -239,18 +327,22 @@ export default function CreatePostModal({
                             onChange={handleMediaSelection}
                             className="block w-full rounded-lg border border-gray-300 p-3 text-sm text-gray-700 file:mr-4 file:rounded-md file:border-0 file:bg-purple-100 file:px-3 file:py-2 file:font-medium file:text-purple-800 dark:border-gray-700 dark:text-gray-300"
                         />
+
                         <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                            JPG, PNG, WEBP, GIF, MP4, WEBM or MOV. Maximum 20 MB
-                            per file.
+                            JPG, PNG, WEBP, GIF, MP4, WEBM or MOV. Maximum
+                            20 MB per file.
                         </p>
+
                         <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
                             {data.media.length} / 5 files selected
                         </p>
+
                         {errors.media && (
                             <p className="mt-1 text-sm text-red-600">
                                 {errors.media}
                             </p>
                         )}
+
                         {Object.entries(errors)
                             .filter(([key]) => key.startsWith('media.'))
                             .map(([key, message]) => (
@@ -268,6 +360,7 @@ export default function CreatePostModal({
                                     <p className="font-medium text-gray-800 dark:text-gray-200">
                                         Media preview
                                     </p>
+
                                     <span className="rounded-full bg-gray-200 px-3 py-1 text-xs font-semibold text-gray-700 dark:bg-gray-800 dark:text-gray-200">
                                         {currentPreview + 1} /{' '}
                                         {mediaPreviews.length}
@@ -322,13 +415,15 @@ export default function CreatePostModal({
                                         }
                                         className="flex items-center gap-1 rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-30 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800"
                                     >
-                                        <span aria-hidden="true">←</span>{' '}
+                                        <span aria-hidden="true">←</span>
                                         Previous
                                     </button>
+
                                     <span className="text-sm text-gray-500 dark:text-gray-400">
                                         {currentPreview + 1} of{' '}
                                         {mediaPreviews.length}
                                     </span>
+
                                     <button
                                         type="button"
                                         disabled={
@@ -342,7 +437,8 @@ export default function CreatePostModal({
                                         }
                                         className="flex items-center gap-1 rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-30 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800"
                                     >
-                                        Next <span aria-hidden="true">→</span>
+                                        Next
+                                        <span aria-hidden="true">→</span>
                                     </button>
                                 </div>
 
@@ -369,19 +465,24 @@ export default function CreatePostModal({
                         >
                             Cancel
                         </button>
+
                         <button
                             type="submit"
-                            disabled={processing || communities.length === 0}
+                            disabled={
+                                processing ||
+                                !hasAvailableCommunity ||
+                                !data.community_id
+                            }
                             className="rounded-lg bg-purple-700 px-5 py-3 font-semibold text-white hover:bg-purple-800 disabled:cursor-not-allowed disabled:opacity-50"
                         >
                             {processing ? 'Publishing...' : 'Publish Post'}
                         </button>
                     </div>
 
-                    {communities.length === 0 && (
+                    {!hasAvailableCommunity && (
                         <p className="text-sm text-amber-600">
-                            No communities are available yet. Create a community
-                            before publishing.
+                            You cannot publish here because you are not an
+                            approved member of this community.
                         </p>
                     )}
                 </form>

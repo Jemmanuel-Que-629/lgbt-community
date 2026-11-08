@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Community;
 use App\Models\Post;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
@@ -55,6 +54,10 @@ class FeedController extends Controller
                 'reactions',
                 'comments',
                 'shares',
+            ])
+            ->withExists([
+                'savedPosts as is_saved' => fn ($query) => $query
+                    ->where('user_id', $user->id),
             ])
             ->with([
                 'reactions' => fn ($query) => $query

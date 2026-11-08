@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { FormEvent, UIEvent } from 'react';
 
 import CommentThread from '@/components/feed/CommentThread';
+import PostCollectionManager from '@/components/feed/PostCollectionManager';
 import type { CommentItem, Post } from '@/types/feed';
 
 type CommentsResponse = {
@@ -20,6 +21,9 @@ type PostActionsProps = {
 export default function PostActions({ post }: PostActionsProps) {
     const [commentsOpen, setCommentsOpen] = useState(false);
     const [shareOpen, setShareOpen] = useState(false);
+    const [menuOpen, setMenuOpen] = useState(false);
+    const [collectionModalOpen, setCollectionModalOpen] = useState(false);
+
     const [commentText, setCommentText] = useState('');
     const [comments, setComments] = useState<CommentItem[]>(
         post.comments ?? [],
@@ -33,10 +37,48 @@ export default function PostActions({ post }: PostActionsProps) {
     );
     const [feedback, setFeedback] = useState('');
 
+    const [isSaved, setIsSaved] = useState(post.is_saved);
+    const [savingPost, setSavingPost] = useState(false);
+
     const loadingMoreRef = useRef(false);
+    const savingPostRef = useRef(false);
+    const menuRef = useRef<HTMLDivElement>(null);
 
     const currentReaction = post.reactions?.[0] ?? null;
     const isLiked = currentReaction !== null;
+
+    useEffect(() => {
+        setIsSaved(post.is_saved);
+    }, [post.id, post.is_saved]);
+
+    // Close the overflow menu when clicking outside or pressing Escape.
+    useEffect(() => {
+        if (!menuOpen) return;
+
+        function handlePointerDown(event: PointerEvent) {
+            if (
+                menuRef.current &&
+                event.target instanceof Node &&
+                !menuRef.current.contains(event.target)
+            ) {
+                setMenuOpen(false);
+            }
+        }
+
+        function handleKeyDown(event: KeyboardEvent) {
+            if (event.key === 'Escape') {
+                setMenuOpen(false);
+            }
+        }
+
+        document.addEventListener('pointerdown', handlePointerDown);
+        document.addEventListener('keydown', handleKeyDown);
+
+        return () => {
+            document.removeEventListener('pointerdown', handlePointerDown);
+            document.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [menuOpen]);
 
     const loadComments = useCallback(
         async (page = 1, append = false) => {
@@ -125,6 +167,52 @@ export default function PostActions({ post }: PostActionsProps) {
         );
     }
 
+    function toggleSave() {
+        if (savingPostRef.current) return;
+
+        savingPostRef.current = true;
+        setSavingPost(true);
+        setFeedback('');
+
+        const previousState = isSaved;
+        const nextState = !previousState;
+
+        setIsSaved(nextState);
+
+        const options = {
+            preserveScroll: true,
+
+            onSuccess: () => {
+                setFeedback(
+                    nextState
+                        ? 'Post saved successfully.'
+                        : 'Post removed from your saved posts.',
+                );
+            },
+
+            onError: () => {
+                setIsSaved(previousState);
+
+                setFeedback(
+                    nextState
+                        ? 'Could not save this post. Please try again.'
+                        : 'Could not remove this saved post. Please try again.',
+                );
+            },
+
+            onFinish: () => {
+                savingPostRef.current = false;
+                setSavingPost(false);
+            },
+        };
+
+        if (nextState) {
+            router.post(`/posts/${post.id}/save`, {}, options);
+        } else {
+            router.delete(`/posts/${post.id}/save`, options);
+        }
+    }
+
     function publishComment(body: string, parentId: number | null = null) {
         setFeedback('');
 
@@ -187,6 +275,7 @@ export default function PostActions({ post }: PostActionsProps) {
 
     function handleCommentsScroll(event: UIEvent<HTMLDivElement>) {
         const element = event.currentTarget;
+
         const nearBottom =
             element.scrollTop + element.clientHeight >=
             element.scrollHeight - 80;
@@ -202,7 +291,7 @@ export default function PostActions({ post }: PostActionsProps) {
     }
 
     async function copyPostLink() {
-        const url = `${window.location.origin}/feed#post-${post.id}`;
+        const url = `${window.location.origin}/communities/${post.community.slug}#post-${post.id}`;
 
         try {
             await navigator.clipboard.writeText(url);
@@ -230,11 +319,13 @@ export default function PostActions({ post }: PostActionsProps) {
     }
 
     const actionClass =
-        'flex flex-1 items-center justify-center gap-2 rounded-lg px-2 py-3 text-sm font-semibold transition hover:bg-gray-100 dark:hover:bg-gray-800';
+        'flex min-w-0 flex-col items-center justify-center gap-1 rounded-lg px-1 py-2 text-xs font-semibold transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50 sm:flex-row sm:gap-2 sm:px-2 sm:py-3 sm:text-sm dark:hover:bg-gray-800';
 
     return (
         <div className="mt-4 border-t border-gray-200 pt-2 dark:border-gray-800">
-            <div className="flex gap-1">
+            {/* Primary actions */}
+            <div className="grid grid-cols-[repeat(4,minmax(0,1fr))_40px] gap-1">
+                {/* Like */}
                 <button
                     type="button"
                     onClick={toggleLike}
@@ -245,34 +336,139 @@ export default function PostActions({ post }: PostActionsProps) {
                             : 'text-gray-600 dark:text-gray-300'
                     }`}
                 >
-                    <span aria-hidden="true">{isLiked ? '♥' : '♡'}</span>
+                    <span aria-hidden="true" className="text-base">
+                        {isLiked ? '♥' : '♡'}
+                    </span>
                     <span>{isLiked ? 'Liked' : 'Like'}</span>
-                    <span>{post.reactions_count ?? 0}</span>
+                    <span className="text-[10px] sm:text-xs">
+                        {post.reactions_count ?? 0}
+                    </span>
                 </button>
 
+                {/* Comment */}
                 <button
                     type="button"
                     onClick={() => setCommentsOpen((open) => !open)}
                     aria-expanded={commentsOpen}
                     className={`${actionClass} text-gray-600 dark:text-gray-300`}
                 >
-                    <span aria-hidden="true">▢</span>
+                    <span aria-hidden="true" className="text-base">
+                        ▢
+                    </span>
                     <span>Comment</span>
-                    <span>{totalComments}</span>
+                    <span className="text-[10px] sm:text-xs">
+                        {totalComments}
+                    </span>
                 </button>
 
+                {/* Share */}
                 <button
                     type="button"
                     onClick={() => setShareOpen((open) => !open)}
                     aria-expanded={shareOpen}
                     className={`${actionClass} text-gray-600 dark:text-gray-300`}
                 >
-                    <span aria-hidden="true">↗</span>
+                    <span aria-hidden="true" className="text-base">
+                        ↗
+                    </span>
                     <span>Share</span>
-                    <span>{post.shares_count ?? 0}</span>
+                    <span className="text-[10px] sm:text-xs">
+                        {post.shares_count ?? 0}
+                    </span>
                 </button>
+
+                {/* Save / Unsave */}
+                <button
+                    type="button"
+                    onClick={toggleSave}
+                    disabled={savingPost}
+                    aria-pressed={isSaved}
+                    aria-label={
+                        isSaved
+                            ? 'Remove from saved posts'
+                            : 'Save post'
+                    }
+                    className={`${actionClass} ${
+                        isSaved
+                            ? 'text-purple-700 dark:text-purple-400'
+                            : 'text-gray-600 dark:text-gray-300'
+                    }`}
+                >
+                    <span aria-hidden="true" className="text-base">
+                        {isSaved ? '🔖' : '♧'}
+                    </span>
+
+                    <span>
+                        {savingPost
+                            ? 'Saving...'
+                            : isSaved
+                              ? 'Saved'
+                              : 'Save'}
+                    </span>
+                </button>
+
+                {/* Secondary actions */}
+                <div ref={menuRef} className="relative flex items-center">
+                    <button
+                        type="button"
+                        onClick={() => setMenuOpen((open) => !open)}
+                        aria-label="More post actions"
+                        aria-haspopup="menu"
+                        aria-expanded={menuOpen}
+                        className="flex h-10 w-10 items-center justify-center rounded-lg text-xl font-bold text-gray-600 transition hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
+                    >
+                        <span aria-hidden="true">···</span>
+                    </button>
+
+                    {menuOpen && (
+                        <div
+                            role="menu"
+                            aria-label="More post actions"
+                            className="absolute top-full right-0 z-40 mt-2 w-64 rounded-xl border border-gray-200 bg-white p-2 shadow-xl dark:border-gray-700 dark:bg-gray-900"
+                        >
+                            <button
+                                type="button"
+                                role="menuitem"
+                                disabled={!isSaved}
+                                onClick={() => {
+                                    setMenuOpen(false);
+                                    setCollectionModalOpen(true);
+                                }}
+                                className="flex w-full items-start gap-3 rounded-lg px-3 py-3 text-left transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50 dark:hover:bg-gray-800"
+                            >
+                                <span
+                                    aria-hidden="true"
+                                    className="text-lg"
+                                >
+                                    📁
+                                </span>
+
+                                <span className="min-w-0">
+                                    <span className="block text-sm font-semibold text-gray-900 dark:text-white">
+                                        Organize into collections
+                                    </span>
+
+                                    <span className="mt-1 block text-xs text-gray-500 dark:text-gray-400">
+                                        {isSaved
+                                            ? 'Add this post to your collections.'
+                                            : 'Save this post first to organize it.'}
+                                    </span>
+                                </span>
+                            </button>
+                        </div>
+                    )}
+                </div>
             </div>
 
+            {/* Collection management modal */}
+            <PostCollectionManager
+                post={post}
+                isSaved={isSaved}
+                isOpen={collectionModalOpen}
+                onClose={() => setCollectionModalOpen(false)}
+            />
+
+            {/* Share panel */}
             {shareOpen && (
                 <div className="mt-2 rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800">
                     <p className="font-semibold text-gray-900 dark:text-white">
@@ -280,8 +476,8 @@ export default function PostActions({ post }: PostActionsProps) {
                     </p>
 
                     <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                        Copy a link to share this post. The link currently
-                        points to your signed-in feed.
+                        Copy a link to the community page where this post
+                        was published.
                     </p>
 
                     <button
@@ -294,6 +490,7 @@ export default function PostActions({ post }: PostActionsProps) {
                 </div>
             )}
 
+            {/* Comments */}
             {commentsOpen && (
                 <section className="mt-3 space-y-4">
                     <form onSubmit={submitComment} className="flex gap-2">
@@ -379,9 +576,11 @@ export default function PostActions({ post }: PostActionsProps) {
                 </section>
             )}
 
+            {/* Feedback */}
             {feedback && (
                 <p
                     role="status"
+                    aria-live="polite"
                     className="mt-2 text-sm text-gray-600 dark:text-gray-400"
                 >
                     {feedback}

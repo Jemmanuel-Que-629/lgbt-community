@@ -12,13 +12,17 @@ use Inertia\Response;
 
 class MyCommunityController extends Controller
 {
+    private const COMMUNITY_PER_PAGE = 12;
+
+    private const REQUESTS_PER_PAGE = 10;
+
     public function index(Request $request): Response
     {
         $validated = $request->validate([
             'tab' => [
                 'nullable',
                 'string',
-                Rule::in(['owned', 'joined']),
+                Rule::in(['owned', 'joined', 'requests']),
             ],
             'search' => [
                 'nullable',
@@ -32,12 +36,7 @@ class MyCommunityController extends Controller
         $tab = $validated['tab'] ?? 'owned';
         $search = trim($validated['search'] ?? '');
 
-        /*
-         * Count only active communities.
-         *
-         * A creator is automatically added to community_user,
-         * so Joined must explicitly exclude communities they own.
-         */
+        // Counts are independent of pagination and search.
         $ownedCount = Community::query()
             ->where('user_id', $user->id)
             ->where('status', 'active')
@@ -48,70 +47,88 @@ class MyCommunityController extends Controller
             ->where('communities.user_id', '!=', $user->id)
             ->count();
 
-        /*
-         * Build the active tab query.
-         */
-        if ($tab === 'owned') {
-            $communitiesQuery = Community::query()
-                ->where('user_id', $user->id)
-                ->where('status', 'active')
-                ->withCount('members');
-        } else {
-            $communitiesQuery = $user->joinedCommunities()
-                ->where('communities.status', 'active')
-                ->where('communities.user_id', '!=', $user->id)
-                ->withCount('members');
-        }
+        // Count all pending requests across all active communities
+        // owned by the authenticated user.
+        $pendingRequestsCount = CommunityJoinRequest::query()
+            ->where('status', 'pending')
+            ->whereHas('community', function ($query) use ($user) {
+                $query
+                    ->where('user_id', $user->id)
+                    ->where('status', 'active');
+            })
+            ->count();
 
-        /*
-         * Search is restricted to the active tab.
-         */
-        if ($search !== '') {
-            $communitiesQuery->where(function ($query) use ($search) {
-                $query->where(
-                    'communities.name',
-                    'like',
-                    "%{$search}%"
-                )->orWhere(
-                    'communities.description',
-                    'like',
-                    "%{$search}%"
-                );
-            });
-        }
-
-        $communities = $communitiesQuery
-            ->orderBy('communities.name')
-            ->paginate(12)
-            ->withQueryString();
-
-        /*
-         * Convert stored image paths into public URLs.
-         */
-        $communities->getCollection()->transform(
-            function (Community $community) {
-                $community->setAttribute(
-                    'image_url',
-                    $community->image_path
-                        ? Storage::disk('public')->url(
-                            $community->image_path
-                        )
-                        : null
-                );
-
-                return $community;
-            }
-        );
-
-        /*
-         * Retrieve pending requests only for the Owned tab.
-         *
-         * This is a separate paginator so a large number of
-         * membership requests cannot make the page excessively large.
-         */
+        $communities = null;
         $pendingRequests = null;
 
-        if ($tab === 'owned') {
+        if ($tab === 'owned' || $tab === 'joined') {
+            if ($tab === 'owned') {
+                $communitiesQuery = Community::query()
+                    ->where('user_id', $user->id)
+                    ->where('status', 'active');
+            } else {
+                $communitiesQuery = $user->joinedCommunities()
+                    ->where('communities.status', 'active')
+                    ->where('communities.user_id', '!=', $user->id);
+            }
+
+            $communitiesQuery->withCount('members');
+
+            if ($search !== '') {
+                $communitiesQuery->where(function ($query) use ($search) {
+                    $query
+                        ->where('communities.name', 'like', "%{$search}%")
+                        ->orWhere(
+                            'communities.description',
+                            'like',
+                            "%{$search}%"
+                        );
+                });
+            }
+
+            $communities = $communitiesQuery
+                ->orderBy('communities.name')
+                ->paginate(
+                    self::COMMUNITY_PER_PAGE,
+                    ['communities.*'],
+                    'communities_page'
+                )
+                ->withQueryString();
+
+            $communities->getCollection()->transform(
+                function (Community $community) {
+                    $community->setAttribute(
+                        'image_url',
+                        $community->image_path
+                            ? Storage::disk('public')->url(
+                                $community->image_path
+                            )
+                            : null
+                    );
+
+                    return $community;
+                }
+            );
+        }
+
+        if ($tab === 'requests') {
+            // Clamp the requested page after actions remove requests.
+            // This prevents an empty page when the last item on a page
+            // has just been approved or rejected.
+            $lastPage = max(
+                1,
+                (int) ceil(
+                    $pendingRequestsCount / self::REQUESTS_PER_PAGE
+                )
+            );
+
+            $requestedPage = max(
+                1,
+                $request->integer('requests_page', 1)
+            );
+
+            $currentPage = min($requestedPage, $lastPage);
+
             $pendingRequests = CommunityJoinRequest::query()
                 ->where('status', 'pending')
                 ->whereHas('community', function ($query) use ($user) {
@@ -124,10 +141,12 @@ class MyCommunityController extends Controller
                     'community:id,user_id,name,slug,image_path',
                 ])
                 ->orderBy('created_at')
+                ->orderBy('id')
                 ->paginate(
-                    10,
+                    self::REQUESTS_PER_PAGE,
                     ['*'],
-                    'requests_page'
+                    'requests_page',
+                    $currentPage
                 )
                 ->withQueryString();
 
@@ -160,10 +179,11 @@ class MyCommunityController extends Controller
             'counts' => [
                 'owned' => $ownedCount,
                 'joined' => $joinedCount,
+                'pendingRequests' => $pendingRequestsCount,
             ],
             'filters' => [
                 'tab' => $tab,
-                'search' => $search,
+                'search' => $tab === 'requests' ? '' : $search,
             ],
         ]);
     }

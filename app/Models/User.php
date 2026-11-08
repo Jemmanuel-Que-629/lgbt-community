@@ -120,4 +120,20 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
     {
         return $this->hasRole('admin');
     }
+
+    /**
+     * @return HasMany<SavedPost, $this>
+     */
+    public function savedPosts(): HasMany
+    {
+        return $this->hasMany(SavedPost::class);
+    }
+
+    /**
+     * @return HasMany<SavedPostCollection, $this>
+     */
+    public function savedPostCollections(): HasMany
+    {
+        return $this->hasMany(SavedPostCollection::class);
+    }
 }

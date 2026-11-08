@@ -1,0 +1,36 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('saved_post_collections', function (Blueprint $table) {
+            $table->id();
+
+            $table->foreignId('user_id')
+                ->constrained()
+                ->cascadeOnDelete();
+
+            $table->string('name', 60);
+
+            $table->timestamps();
+
+            // A user cannot create duplicate collection names.
+            $table->unique(
+                ['user_id', 'name'],
+                'saved_post_collections_user_name_unique'
+            );
+
+            $table->index(['user_id', 'created_at']);
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('saved_post_collections');
+    }
+};

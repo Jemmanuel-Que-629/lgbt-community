@@ -1,5 +1,4 @@
-
-import { Head, router, useForm, usePage } from '@inertiajs/react';
+import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 import { useEffect, useMemo, useState } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
 import { toast } from 'sonner';
@@ -16,11 +15,12 @@ import {
     Check,
     UserRound,
     Clock,
+    ArrowUpRight,
 } from 'lucide-react';
 
 type CommunityMember = {
     id: number;
-    username: string;
+    username: string | null;
 };
 
 type PendingJoinRequest = {
@@ -47,8 +47,8 @@ type CommunityItem = {
     pending_join_requests: PendingJoinRequest[];
     creator: {
         id: number;
-        username: string;
-    };
+        username: string | null;
+    } | null;
     members: CommunityMember[];
 };
 
@@ -80,6 +80,7 @@ type SharedProps = {
     flash?: {
         success?: string | null;
         error?: string | null;
+        info?: string | null;
     };
 };
 
@@ -90,8 +91,11 @@ export default function CommunitiesIndex({
 }: CommunitiesPageProps) {
     const { flash } = usePage<SharedProps>().props;
 
-    const [search, setSearch] = useState(filters.search);
-    const [category, setCategory] = useState(filters.category);
+    const communityItems = communities?.data ?? [];
+    const categoryItems = categories ?? [];
+
+    const [search, setSearch] = useState(filters?.search ?? '');
+    const [category, setCategory] = useState(filters?.category ?? '');
     const [busyCommunityId, setBusyCommunityId] = useState<number | null>(
         null,
     );
@@ -103,9 +107,12 @@ export default function CommunitiesIndex({
     >(null);
 
     const selectedCommunity =
-        communities.data.find(
+        communityItems.find(
             (community) => community.id === selectedCommunityId,
         ) ?? null;
+    
+    const pendingRequests =
+    selectedCommunity?.pending_join_requests ?? [];
 
     const createForm = useForm<{
         name: string;
@@ -127,8 +134,11 @@ export default function CommunitiesIndex({
     const [categorySearch, setCategorySearch] = useState('');
 
     const sortedCategories = useMemo(
-        () => [...categories].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' })),
-        [categories],
+        () =>
+            [...categoryItems].sort((a, b) =>
+                a.localeCompare(b, undefined, { sensitivity: 'base' }),
+            ),
+        [categoryItems],
     );
 
     const filteredCategories = useMemo(() => {
@@ -143,7 +153,6 @@ export default function CommunitiesIndex({
         );
     }, [categorySearch, sortedCategories]);
 
-    // Display server flash messages after Inertia navigation.
     useEffect(() => {
         if (flash?.success) {
             toast.success(flash.success);
@@ -152,9 +161,12 @@ export default function CommunitiesIndex({
         if (flash?.error) {
             toast.error(flash.error);
         }
-    }, [flash?.success, flash?.error]);
 
-    // Manage the selected image preview and release its object URL.
+        if (flash?.info) {
+            toast.info(flash.info);
+        }
+    }, [flash?.success, flash?.error, flash?.info]);
+
     useEffect(() => {
         if (!createForm.data.image) {
             setImagePreview(null);
@@ -225,6 +237,7 @@ export default function CommunitiesIndex({
             onSuccess: () => {
                 setCreateModalOpen(false);
                 createForm.reset();
+                setCategorySearch('');
             },
             onError: () => {
                 toast.error(
@@ -237,7 +250,20 @@ export default function CommunitiesIndex({
     function handleImageChange(event: ChangeEvent<HTMLInputElement>) {
         const file = event.target.files?.[0] ?? null;
 
+        if (file && !['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+            toast.error('Please select a JPG, PNG, or WEBP image.');
+            event.target.value = '';
+            return;
+        }
+
+        if (file && file.size > 5 * 1024 * 1024) {
+            toast.error('The image must be 5 MB or smaller.');
+            event.target.value = '';
+            return;
+        }
+
         createForm.setData('image', file);
+        createForm.clearErrors('image');
     }
 
     function closeCreateModal() {
@@ -248,6 +274,7 @@ export default function CommunitiesIndex({
         setCreateModalOpen(false);
         createForm.reset();
         createForm.clearErrors();
+        setCategorySearch('');
     }
 
     function toggleMembership(community: CommunityItem) {
@@ -270,10 +297,7 @@ export default function CommunitiesIndex({
         };
 
         if (community.is_member) {
-            router.delete(
-                `/communities/${community.slug}/leave`,
-                options,
-            );
+            router.delete(`/communities/${community.slug}/leave`, options);
         } else {
             router.post(
                 `/communities/${community.slug}/join`,
@@ -285,17 +309,17 @@ export default function CommunitiesIndex({
 
     function handleJoinRequest(
         community: CommunityItem,
-        request: PendingJoinRequest,
+        joinRequest: PendingJoinRequest,
         action: 'approve' | 'reject',
     ) {
         if (busyRequestId !== null || !community.is_owner) {
             return;
         }
 
-        setBusyRequestId(request.id);
+        setBusyRequestId(joinRequest.id);
 
         router.patch(
-            `/communities/${community.slug}/join-requests/${request.id}/${action}`,
+            `/communities/${community.slug}/join-requests/${joinRequest.id}/${action}`,
             {},
             {
                 preserveScroll: true,
@@ -309,8 +333,12 @@ export default function CommunitiesIndex({
         );
     }
 
-    function getInitial(username: string) {
-        return username.charAt(0).toUpperCase();
+    function getInitial(username?: string | null) {
+        const normalizedUsername = username?.trim();
+
+        return normalizedUsername
+            ? normalizedUsername.charAt(0).toUpperCase()
+            : '?';
     }
 
     function getMembershipLabel(community: CommunityItem) {
@@ -395,7 +423,7 @@ export default function CommunitiesIndex({
                         >
                             <option value="">All categories</option>
 
-                            {categories.map((item) => (
+                            {categoryItems.map((item) => (
                                 <option key={item} value={item}>
                                     {item}
                                 </option>
@@ -432,20 +460,23 @@ export default function CommunitiesIndex({
                     </div>
 
                     {/* Community cards */}
-                    {communities.data.length > 0 ? (
+                    {communityItems.length > 0 ? (
                         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                            {communities.data.map((community) => {
+                            {communityItems.map((community) => {
                                 const isBusy =
                                     busyCommunityId === community.id;
 
                                 const isPending =
-                                    community.join_request_status ===
-                                    'pending';
+                                    community.join_request_status === 'pending';
 
                                 const isActionDisabled =
                                     busyCommunityId !== null ||
                                     community.is_owner ||
                                     isPending;
+
+                                const members = community.members ?? [];
+                                const pendingRequests =
+                                     selectedCommunity?.pending_join_requests ?? [];
 
                                 return (
                                     <article
@@ -460,6 +491,10 @@ export default function CommunitiesIndex({
                                                     alt={`${community.name} community`}
                                                     className="h-full w-full object-cover"
                                                     loading="lazy"
+                                                    onError={(event) => {
+                                                        event.currentTarget.style.display =
+                                                            'none';
+                                                    }}
                                                 />
                                             ) : (
                                                 <div className="flex flex-col items-center gap-2 text-purple-700 dark:text-purple-300">
@@ -481,7 +516,8 @@ export default function CommunitiesIndex({
 
                                                     <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                                                         Created by @
-                                                        {community.creator.username}
+                                                        {community.creator?.username?.trim() ||
+                                                            'Unknown user'}
                                                     </p>
                                                 </div>
 
@@ -520,15 +556,26 @@ export default function CommunitiesIndex({
                                                     'No description has been added yet.'}
                                             </p>
 
+                                         <Link
+                                            href={`/communities/${community.slug}`}
+                                            className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-indigo-600 transition-colors hover:text-indigo-700 hover:underline dark:text-indigo-400"
+                                        >
+                                            View Community
+                                            <ArrowUpRight className="h-4 w-4" />
+                                        </Link>
                                             {/* Member previews */}
                                             <div className="mt-4 flex items-center justify-between gap-3">
-                                                <div className="flex items-center">
-                                                    {community.members.map(
+                                                <div className="flex min-w-0 items-center">
+                                                    {members.map(
                                                         (member, index) => (
                                                             <div
                                                                 key={member.id}
-                                                                title={`@${member.username}`}
-                                                                className={`flex h-8 w-8 items-center justify-center rounded-full border-2 border-white bg-purple-200 text-xs font-semibold text-purple-800 dark:border-gray-900 dark:bg-purple-900 dark:text-purple-200 ${
+                                                                title={
+                                                                    member.username
+                                                                        ? `@${member.username}`
+                                                                        : 'Community member'
+                                                                }
+                                                                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 border-white bg-purple-200 text-xs font-semibold text-purple-800 dark:border-gray-900 dark:bg-purple-900 dark:text-purple-200 ${
                                                                     index > 0
                                                                         ? '-ml-2'
                                                                         : ''
@@ -541,7 +588,7 @@ export default function CommunitiesIndex({
                                                         ),
                                                     )}
 
-                                                    <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">
+                                                    <span className="ml-2 whitespace-nowrap text-xs text-gray-500 dark:text-gray-400">
                                                         <Users className="mr-1 inline h-3.5 w-3.5" />
                                                         {community.members_count}{' '}
                                                         {community.members_count ===
@@ -566,6 +613,7 @@ export default function CommunitiesIndex({
                                                     >
                                                         <Users className="h-4 w-4" />
                                                         Manage Requests
+
                                                         {community.pending_join_requests_count >
                                                             0 && (
                                                             <span className="rounded-full bg-purple-700 px-2 py-0.5 text-xs text-white">
@@ -786,10 +834,7 @@ export default function CommunitiesIndex({
                                     )}
 
                                     <span className="text-xs text-gray-400">
-                                        {
-                                            createForm.data.description
-                                                .length
-                                        }
+                                        {createForm.data.description.length}
                                         /1000
                                     </span>
                                 </div>
@@ -832,12 +877,15 @@ export default function CommunitiesIndex({
                                                 aria-hidden="true"
                                                 className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
                                             />
+
                                             <input
                                                 id="community-category-search"
                                                 type="search"
                                                 value={categorySearch}
                                                 onChange={(event) =>
-                                                    setCategorySearch(event.target.value)
+                                                    setCategorySearch(
+                                                        event.target.value,
+                                                    )
                                                 }
                                                 placeholder="Search existing categories..."
                                                 autoComplete="off"
@@ -853,39 +901,58 @@ export default function CommunitiesIndex({
                                         >
                                             {filteredCategories.length > 0 ? (
                                                 <div className="space-y-1">
-                                                    {filteredCategories.map((item) => {
-                                                        const isSelected = createForm.data.category === item;
+                                                    {filteredCategories.map(
+                                                        (item) => {
+                                                            const isSelected =
+                                                                createForm.data.category ===
+                                                                item;
 
-                                                        return (
-                                                            <button
-                                                                key={item}
-                                                                type="button"
-                                                                aria-pressed={isSelected}
-                                                                onClick={() => {
-                                                                    createForm.setData('category', item);
-                                                                    createForm.clearErrors('category');
-                                                                }}
-                                                                className={`flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2.5 text-left text-sm transition focus:outline-none focus:ring-2 focus:ring-inset focus:ring-purple-500 ${
-                                                                    isSelected
-                                                                        ? 'bg-purple-100 font-semibold text-purple-800 dark:bg-purple-950 dark:text-purple-200'
-                                                                        : 'text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800'
-                                                                }`}
-                                                            >
-                                                                <span className="min-w-0 break-words">{item}</span>
-                                                                {isSelected && (
-                                                                    <Check className="h-4 w-4 shrink-0" aria-hidden="true" />
-                                                                )}
-                                                            </button>
-                                                        );
-                                                    })}
+                                                            return (
+                                                                <button
+                                                                    key={item}
+                                                                    type="button"
+                                                                    aria-pressed={
+                                                                        isSelected
+                                                                    }
+                                                                    onClick={() => {
+                                                                        createForm.setData(
+                                                                            'category',
+                                                                            item,
+                                                                        );
+                                                                        createForm.clearErrors(
+                                                                            'category',
+                                                                        );
+                                                                    }}
+                                                                    className={`flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2.5 text-left text-sm transition focus:outline-none focus:ring-2 focus:ring-inset focus:ring-purple-500 ${
+                                                                        isSelected
+                                                                            ? 'bg-purple-100 font-semibold text-purple-800 dark:bg-purple-950 dark:text-purple-200'
+                                                                            : 'text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800'
+                                                                    }`}
+                                                                >
+                                                                    <span className="min-w-0 break-words">
+                                                                        {item}
+                                                                    </span>
+
+                                                                    {isSelected && (
+                                                                        <Check
+                                                                            className="h-4 w-4 shrink-0"
+                                                                            aria-hidden="true"
+                                                                        />
+                                                                    )}
+                                                                </button>
+                                                            );
+                                                        },
+                                                    )}
                                                 </div>
                                             ) : (
                                                 <div className="px-4 py-6 text-center">
                                                     <p className="text-sm font-medium text-gray-700 dark:text-gray-200">
                                                         No categories found
                                                     </p>
+
                                                     <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                                                        Try another search or create a new category.
+                                                        Try another search or
+                                                        create a new category.
                                                     </p>
                                                 </div>
                                             )}
@@ -893,12 +960,17 @@ export default function CommunitiesIndex({
 
                                         <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-gray-500 dark:text-gray-400">
                                             <span>
-                                                {filteredCategories.length} of {sortedCategories.length} categories
+                                                {filteredCategories.length} of{' '}
+                                                {sortedCategories.length}{' '}
+                                                categories
                                             </span>
+
                                             {categorySearch && (
                                                 <button
                                                     type="button"
-                                                    onClick={() => setCategorySearch('')}
+                                                    onClick={() =>
+                                                        setCategorySearch('')
+                                                    }
                                                     className="font-medium text-purple-700 hover:underline dark:text-purple-400"
                                                 >
                                                     Clear search
@@ -909,11 +981,20 @@ export default function CommunitiesIndex({
                                         {createForm.data.category && (
                                             <div className="flex items-center justify-between gap-3 rounded-lg bg-green-50 px-3 py-2 text-sm dark:bg-green-950/30">
                                                 <span className="min-w-0 text-green-800 dark:text-green-300">
-                                                    Selected: <strong className="break-words">{createForm.data.category}</strong>
+                                                    Selected:{' '}
+                                                    <strong className="break-words">
+                                                        {createForm.data.category}
+                                                    </strong>
                                                 </span>
+
                                                 <button
                                                     type="button"
-                                                    onClick={() => createForm.setData('category', '')}
+                                                    onClick={() =>
+                                                        createForm.setData(
+                                                            'category',
+                                                            '',
+                                                        )
+                                                    }
                                                     className="shrink-0 text-xs font-semibold text-green-800 hover:underline dark:text-green-300"
                                                 >
                                                     Change
@@ -941,6 +1022,7 @@ export default function CommunitiesIndex({
                                             autoComplete="off"
                                             className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 outline-none focus:border-purple-600 focus:ring-2 focus:ring-purple-200 dark:border-gray-700 dark:bg-gray-950 dark:text-white"
                                         />
+
                                         <div className="flex items-center justify-between gap-2">
                                             <button
                                                 type="button"
@@ -957,8 +1039,10 @@ export default function CommunitiesIndex({
                                             >
                                                 ← Choose an existing category
                                             </button>
+
                                             <span className="text-xs text-gray-400">
-                                                {createForm.data.category.length}/50
+                                                {createForm.data.category.length}
+                                                /50
                                             </span>
                                         </div>
                                     </div>
@@ -989,8 +1073,7 @@ export default function CommunitiesIndex({
                                 <div className="grid gap-3 sm:grid-cols-2">
                                     <label
                                         className={`flex cursor-pointer gap-3 rounded-xl border p-4 transition ${
-                                            createForm.data.visibility ===
-                                            'public'
+                                            createForm.data.visibility === 'public'
                                                 ? 'border-purple-600 bg-purple-50 ring-1 ring-purple-600 dark:bg-purple-950/30'
                                                 : 'border-gray-200 hover:border-gray-400 dark:border-gray-700'
                                         }`}
@@ -1015,6 +1098,7 @@ export default function CommunitiesIndex({
                                         <div>
                                             <div className="flex items-center gap-2">
                                                 <Globe2 className="h-5 w-5 text-purple-700 dark:text-purple-400" />
+
                                                 <span className="text-sm font-semibold text-gray-900 dark:text-white">
                                                     Public
                                                 </span>
@@ -1029,8 +1113,7 @@ export default function CommunitiesIndex({
 
                                     <label
                                         className={`flex cursor-pointer gap-3 rounded-xl border p-4 transition ${
-                                            createForm.data.visibility ===
-                                            'private'
+                                            createForm.data.visibility === 'private'
                                                 ? 'border-purple-600 bg-purple-50 ring-1 ring-purple-600 dark:bg-purple-950/30'
                                                 : 'border-gray-200 hover:border-gray-400 dark:border-gray-700'
                                         }`}
@@ -1055,6 +1138,7 @@ export default function CommunitiesIndex({
                                         <div>
                                             <div className="flex items-center gap-2">
                                                 <LockKeyhole className="h-5 w-5 text-purple-700 dark:text-purple-400" />
+
                                                 <span className="text-sm font-semibold text-gray-900 dark:text-white">
                                                     Private
                                                 </span>
@@ -1098,12 +1182,18 @@ export default function CommunitiesIndex({
 
                                         <button
                                             type="button"
-                                            onClick={() =>
-                                                createForm.setData(
-                                                    'image',
-                                                    null,
-                                                )
-                                            }
+                                            onClick={() => {
+                                                createForm.setData('image', null);
+
+                                                const input =
+                                                    document.getElementById(
+                                                        'community-image',
+                                                    ) as HTMLInputElement | null;
+
+                                                if (input) {
+                                                    input.value = '';
+                                                }
+                                            }}
                                             aria-label="Remove selected image"
                                             className="absolute right-3 top-3 rounded-full bg-black/60 p-2 text-white hover:bg-black/80"
                                         >
@@ -1200,9 +1290,7 @@ export default function CommunitiesIndex({
 
                             <button
                                 type="button"
-                                onClick={() =>
-                                    setSelectedCommunityId(null)
-                                }
+                                onClick={() => setSelectedCommunityId(null)}
                                 aria-label="Close join requests"
                                 className="rounded-lg p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-gray-800 dark:hover:text-white"
                             >
@@ -1211,84 +1299,79 @@ export default function CommunitiesIndex({
                         </div>
 
                         <div className="p-5">
-                            {selectedCommunity.pending_join_requests.length >
-                            0 ? (
+                            {pendingRequests.length > 0 ? (
                                 <div className="space-y-3">
-                                    {selectedCommunity.pending_join_requests.map(
-                                        (request) => {
-                                            const isBusy =
-                                                busyRequestId === request.id;
+                                    {pendingRequests.map((joinRequest) => {
+                                        const isBusy =
+                                            busyRequestId === joinRequest.id;
 
-                                            return (
-                                                <div
-                                                    key={request.id}
-                                                    className="flex flex-col gap-3 rounded-xl border border-gray-200 p-4 dark:border-gray-800 sm:flex-row sm:items-center sm:justify-between"
-                                                >
-                                                    <div className="flex min-w-0 items-center gap-3">
-                                                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300">
-                                                            <UserRound className="h-5 w-5" />
-                                                        </div>
-
-                                                        <div className="min-w-0">
-                                                            <p className="truncate text-sm font-semibold text-gray-900 dark:text-white">
-                                                                @
-                                                                {
-                                                                    request.username
-                                                                }
-                                                            </p>
-
-                                                            <p className="mt-1 flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
-                                                                <Clock className="h-3 w-3" />
-                                                                Waiting for
-                                                                approval
-                                                            </p>
-                                                        </div>
+                                        return (
+                                            <div
+                                                key={joinRequest.id}
+                                                className="flex flex-col gap-3 rounded-xl border border-gray-200 p-4 dark:border-gray-800 sm:flex-row sm:items-center sm:justify-between"
+                                            >
+                                                <div className="flex min-w-0 items-center gap-3">
+                                                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300">
+                                                        <UserRound className="h-5 w-5" />
                                                     </div>
 
-                                                    <div className="flex shrink-0 gap-2">
-                                                        <button
-                                                            type="button"
-                                                            disabled={
-                                                                busyRequestId !==
-                                                                null
-                                                            }
-                                                            onClick={() =>
-                                                                handleJoinRequest(
-                                                                    selectedCommunity,
-                                                                    request,
-                                                                    'reject',
-                                                                )
-                                                            }
-                                                            className="rounded-lg border border-gray-300 px-3 py-2 text-xs font-semibold text-gray-700 transition hover:bg-gray-100 disabled:opacity-50 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800"
-                                                        >
-                                                            {isBusy
-                                                                ? 'Please wait...'
-                                                                : 'Reject'}
-                                                        </button>
+                                                    <div className="min-w-0">
+                                                        <p className="truncate text-sm font-semibold text-gray-900 dark:text-white">
+                                                            @
+                                                            {joinRequest.username ||
+                                                                'Unknown user'}
+                                                        </p>
 
-                                                        <button
-                                                            type="button"
-                                                            disabled={
-                                                                busyRequestId !==
-                                                                null
-                                                            }
-                                                            onClick={() =>
-                                                                handleJoinRequest(
-                                                                    selectedCommunity,
-                                                                    request,
-                                                                    'approve',
-                                                                )
-                                                            }
-                                                            className="inline-flex items-center gap-1 rounded-lg bg-purple-700 px-3 py-2 text-xs font-semibold text-white transition hover:bg-purple-800 disabled:opacity-50"
-                                                        >
-                                                            <Check className="h-3.5 w-3.5" />
-                                                            Approve
-                                                        </button>
+                                                        <p className="mt-1 flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
+                                                            <Clock className="h-3 w-3" />
+                                                            Waiting for approval
+                                                        </p>
                                                     </div>
                                                 </div>
-                                            );
-                                        },
-                                    )}
+
+                                                <div className="flex shrink-0 gap-2">
+                                                    <button
+                                                        type="button"
+                                                        disabled={
+                                                            busyRequestId !==
+                                                            null
+                                                        }
+                                                        onClick={() =>
+                                                            handleJoinRequest(
+                                                                selectedCommunity,
+                                                                joinRequest,
+                                                                'reject',
+                                                            )
+                                                        }
+                                                        className="rounded-lg border border-gray-300 px-3 py-2 text-xs font-semibold text-gray-700 transition hover:bg-gray-100 disabled:opacity-50 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800"
+                                                    >
+                                                        {isBusy
+                                                            ? 'Please wait...'
+                                                            : 'Reject'}
+                                                    </button>
+
+                                                    <button
+                                                        type="button"
+                                                        disabled={
+                                                            busyRequestId !==
+                                                            null
+                                                        }
+                                                        onClick={() =>
+                                                            handleJoinRequest(
+                                                                selectedCommunity,
+                                                                joinRequest,
+                                                                'approve',
+                                                            )
+                                                        }
+                                                        className="inline-flex items-center gap-1 rounded-lg bg-purple-700 px-3 py-2 text-xs font-semibold text-white transition hover:bg-purple-800 disabled:opacity-50"
+                                                    >
+                                                        <Check className="h-3.5 w-3.5" />
+                                                        Approve
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
                                 </div>
                             ) : (
                                 <div className="py-10 text-center">
@@ -1303,6 +1386,18 @@ export default function CommunitiesIndex({
                                         here.
                                     </p>
                                 </div>
+                            )}
+
+                            {selectedCommunity.pending_join_requests_count >
+                                pendingRequests.length && (
+                                <p className="mt-4 text-center text-xs text-gray-500 dark:text-gray-400">
+                                    Showing the first {pendingRequests.length}{' '}
+                                    of{' '}
+                                    {
+                                        selectedCommunity.pending_join_requests_count
+                                    }{' '}
+                                    pending requests.
+                                </p>
                             )}
                         </div>
                     </section>

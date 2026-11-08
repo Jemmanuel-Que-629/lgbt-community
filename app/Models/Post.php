@@ -15,6 +15,13 @@ class Post extends Model
         'body',
     ];
 
+    protected function casts(): array
+    {
+        return [
+            'is_saved' => 'boolean',
+        ];
+    }
+
     /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
@@ -49,5 +56,11 @@ class Post extends Model
     public function shares(): HasMany
     {
         return $this->hasMany(PostShare::class);
+    }
+
+    /** @return HasMany<SavedPost, $this> */
+    public function savedPosts(): HasMany
+    {
+        return $this->hasMany(SavedPost::class);
     }
 }
